@@ -8,11 +8,11 @@
 
 Операционная система: Windows 11
 
-Бэкенд: NestJS
+Бэкенд: Node,js
 
 Фронтенд: Vue.js
 
-База данных: PostgreSQL (разворачивается через Docker Compose)
+База данных: PostgreSQL
 
 Среда разработки: VS Code
 
@@ -20,31 +20,19 @@
 
 Перед запуском проекта убедитесь, что у вас установлены следующие инструменты:
 
-Docker и Docker Compose
-
-Node.js (для работы с NestJS и Vue)
+Node.js (для работы с Vue)
 
 Git
 
-### **Развертывание базы данных через Docker Compose**
+PostgreSql (для работы с БД)
 
 Клонируйте репозиторий проекта: 
 ``` code
 git clone <URL-РЕПОЗИТОРИЯ>
 cd <ИМЯ-ПРОЕКТА>
+cd server/src
+node main.js
 ```
-Запустите контейнеры с базой данных PostgreSQL:
-
-``` code
-docker-compose up -d
-```
-
-Проверьте, что контейнеры запущены:
-
-``` code
-docker ps
-```
-
 
 Внесите необходимые настройки в .env файл (пример настроек для подключения к БД):
 
@@ -55,7 +43,6 @@ DATABASE_USER=postgres
 DATABASE_PASSWORD=your_password
 DATABASE_NAME=your_database
 ```
-
 
 ### **Работа с Git**
 
