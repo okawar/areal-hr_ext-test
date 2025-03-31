@@ -49,9 +49,16 @@ const updateOrg = async (req, res) => {
 const deleteOrg = async (req, res) => {
     const {id} = req.params
     try{
-        await pool.query('UPDATE organizations SET is_deleted = true, deleted_at = NOW() WHERE id = $1', [id]);
-        res.message({message: "Организация удалена"})
+        const result = await pool.query('UPDATE organizations SET is_deleted = true, deleted_at = NOW() WHERE id = $1', [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Организация не найдена" });
+        }
+
+        res.json({message: "Организация удалена"})
     }
+
+    
     catch (err) {
         res.status(500).json({error: err.message})
     }

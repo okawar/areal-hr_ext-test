@@ -52,9 +52,14 @@ const updatePos = async (req, res) => {
 const deletePos = async (req, res) => {
     const {id} = req.params
     try{
-        await pool.query( 'UPDATE positions SET is_deleted = true, deleted_at = NOW() WHERE id = $1 RETURNING *',
+        const result = await pool.query( 'UPDATE positions SET is_deleted = true, deleted_at = NOW() WHERE id = $1 RETURNING *',
             [id]);
-        res.message({message: "Должность удалена"})
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Должность не найдена" });
+        }
+
+        res.json({message: "Должность удалена"})
     }
     catch (err) {
         res.status(500).json({error: err.message})

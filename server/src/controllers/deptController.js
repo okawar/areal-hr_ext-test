@@ -50,15 +50,22 @@ const updateDept = async (req, res) => {
 } 
 
 const deleteDept = async (req, res) => {
-    const {id} = req.params
-    try{
-        await pool.query('UPDATE departments SET is_deleted = true, deleted_at = NOW() WHERE id = $1 RETURNING *',
-      [id]);
-        res.message({message: "Отдел удален"})
+    const { id } = req.params;
+    try {
+        const result = await pool.query(
+            'UPDATE departments SET is_deleted = true, deleted_at = NOW() WHERE id = $1 RETURNING *',
+            [id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Отдел не найден" });
+        }
+
+        res.json({ message: "Отдел успешно удален" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
-    catch (err) {
-        res.status(500).json({error: err.message})
-    }
-}
+};
    
 module.exports = { getDepts, getDeptById, createDept, updateDept, deleteDept };
