@@ -3,8 +3,8 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 const positions = ref([]);
-
 const showModal = ref(false);
+const errors = ref({}); 
 
 const positionForm = ref({
   id: null,
@@ -13,20 +13,20 @@ const positionForm = ref({
 
 const fetchPositions = async () => {
   try {
-    console.log("Запрашиваем должности...");
     const response = await axios.get("http://localhost:3000/api/pos");
-    console.log("Ответ с API:", response.data);
-    positions.value = response.data;
+    positions.value = response.data.sort((a, b) => a.id - b.id);
   } catch (error) {
     console.error("Ошибка при загрузке должностей:", error);
   }
 };
 
 const openModal = (pos = null) => {
+  errors.value = {}; 
+
   if (pos) {
-    positionForm.value = { ...pos }; 
+    positionForm.value = { ...pos };
   } else {
-    positionForm.value = { id: null, name: "" }; 
+    positionForm.value = { id: null, name: "" };
   }
   showModal.value = true;
 };
@@ -36,6 +36,8 @@ const closeModal = () => {
 };
 
 const savePosition = async () => {
+  errors.value = {}; 
+
   try {
     if (positionForm.value.id) {
       await axios.put(`http://localhost:3000/api/pos/${positionForm.value.id}`, positionForm.value);
@@ -43,8 +45,17 @@ const savePosition = async () => {
       await axios.post("http://localhost:3000/api/pos", positionForm.value);
     }
     closeModal();
-    fetchPositions(); 
+    fetchPositions();
   } catch (error) {
+    if (error.response && error.response.data.error) {
+      errors.value = { general: error.response.data.error };
+    }
+    if (error.response && error.response.data.details) {
+      errors.value = error.response.data.details.reduce((acc, item) => {
+        acc[item.path] = item.message;
+        return acc;
+      }, {});
+    }
     console.error("Ошибка при сохранении должности:", error);
   }
 };
@@ -89,8 +100,12 @@ onMounted(fetchPositions);
     <div v-if="showModal" class="modal">
       <div class="modal-content">
         <h3>{{ positionForm.id ? "Редактировать должность" : "Добавить должность" }}</h3>
+        
         <label>Название:</label>
         <input v-model="positionForm.name" type="text" />
+        <p v-if="errors.name" class="error">{{ errors.name }}</p>
+
+        <p v-if="errors.general" class="error">{{ errors.general }}</p>
 
         <button @click="savePosition">Сохранить</button>
         <button @click="closeModal">Отмена</button>
@@ -100,6 +115,10 @@ onMounted(fetchPositions);
 </template>
 
 <style>
+.error {
+  color: red;
+  font-size: 14px;
+}
 .modal {
   position: fixed;
   top: 0;

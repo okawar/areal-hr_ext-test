@@ -5,6 +5,8 @@ import axios from 'axios';
 const organizations = ref([]);
 
 const showModal = ref(false);
+const errors = ref({}); 
+
 
 const orgForm = ref({
   id: null,
@@ -17,13 +19,14 @@ const fetchOrganizations = async () => {
     console.log("Запрашиваем организации...");
     const response = await axios.get("http://localhost:3000/api/orgs");
     console.log("Ответ с API:", response.data);
-    organizations.value = response.data;
+    organizations.value = response.data.sort((a, b) => a.id - b.id);
   } catch (error) {
     console.error("Ошибка при загрузке организаций:", error);
   }
 };
 
 const openModal = (org = null) => {
+  errors.value = {};
   if (org) {
     orgForm.value = { ...org }; 
   } else {
@@ -46,6 +49,15 @@ const saveOrganization = async () => {
     closeModal();
     fetchOrganizations(); 
   } catch (error) {
+    if (error.response && error.response.data.error) {
+      errors.value = { general: error.response.data.error };
+    }
+    if (error.response && error.response.data.details) {
+      errors.value = error.response.data.details.reduce((acc, item) => {
+        acc[item.path] = item.message;
+        return acc;
+      }, {});
+    }
     console.error("Ошибка при сохранении организации:", error);
   }
 };
@@ -97,6 +109,10 @@ onMounted(fetchOrganizations);
 
         <label>Комментарий:</label>
         <input v-model="orgForm.comment" type="text" />
+
+        <p v-if="errors.name" class="error">{{ errors.name }}</p>
+
+        <p v-if="errors.general" class="error">{{ errors.general }}</p>
 
         <button @click="saveOrganization">Сохранить</button>
         <button @click="closeModal">Отмена</button>

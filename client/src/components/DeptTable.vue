@@ -6,6 +6,8 @@ const departments = ref([]);
 
 const showModal = ref(false);
 
+const errors = ref({}); 
+
 const departmentForm = ref({
   id: null,
   name: "",
@@ -16,7 +18,7 @@ const fetchDepartments = async () => {
     console.log("Запрашиваем отделы...");
     const response = await axios.get("http://localhost:3000/api/dept");
     console.log("Ответ с API:", response.data);
-    departments.value = response.data;
+    departments.value = response.data.sort((a, b) => a.id - b.id);
   } catch (error) {
     console.error("Ошибка при загрузке отделов:", error);
   }
@@ -40,6 +42,7 @@ const closeModal = () => {
 
 
 const saveDepartment = async () => {
+  errors.value = {}; 
   try {
     if (departmentForm.value.id) {
       await axios.put(`http://localhost:3000/api/dept/${departmentForm.value.id}`, departmentForm.value);
@@ -49,7 +52,16 @@ const saveDepartment = async () => {
     closeModal();
     fetchDepartments(); 
   } catch (error) {
-    console.error("Ошибка при сохранении отдела:", error);
+    if (error.response && error.response.data.error) {
+      errors.value = { general: error.response.data.error };
+    }
+    if (error.response && error.response.data.details) {
+      errors.value = error.response.data.details.reduce((acc, item) => {
+        acc[item.path] = item.message;
+        return acc;
+      }, {});
+    }
+    console.error("Ошибка при сохранении должности:", error);
   }
 };
 
@@ -75,7 +87,6 @@ onMounted(fetchDepartments);
         <tr>
           <th>ID</th>
           <th>Название</th>
-          <th>Статус</th>
           <th>Действия</th>
         </tr>
       </thead>
@@ -83,7 +94,6 @@ onMounted(fetchDepartments);
         <tr v-for="dept in departments" :key="dept.id">
           <td>{{ dept.id }}</td>
           <td>{{ dept.name }}</td>
-          <td>{{ dept.is_deleted ? "Удален" : "Активен" }}</td>
           <td>
             <button @click="openModal(dept)">Редактировать</button>
             <button @click="deleteDepartment(dept.id)">Удалить</button>
@@ -97,6 +107,10 @@ onMounted(fetchDepartments);
         <h3>{{ departmentForm.id ? "Редактировать отдел" : "Добавить отдел" }}</h3>
         <label>Название:</label>
         <input v-model="departmentForm.name" type="text" />
+
+        <p v-if="errors.name" class="error">{{ errors.name }}</p>
+
+        <p v-if="errors.general" class="error">{{ errors.general }}</p>
 
         <button @click="saveDepartment">Сохранить</button>
         <button @click="closeModal">Отмена</button>
