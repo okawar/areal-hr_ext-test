@@ -5,8 +5,7 @@ import axios from 'axios';
 const organizations = ref([]);
 
 const showModal = ref(false);
-const errors = ref({}); 
-
+const errors = ref({});
 
 const orgForm = ref({
   id: null,
@@ -40,27 +39,58 @@ const closeModal = () => {
 };
 
 const saveOrganization = async () => {
+  errors.value = {}; // Сброс ошибок
+  
+  // Создаем копию данных для отправки
+  const dataToSend = { 
+    name: orgForm.value.name,
+    comment: String(orgForm.value.comment || "")
+  };
+  
   try {
+    // Отправка данных на сервер
     if (orgForm.value.id) {
-      await axios.put(`http://localhost:3000/api/orgs/${orgForm.value.id}`, orgForm.value);
+      // Для обновления организации
+      const response = await axios.put(
+        `http://localhost:3000/api/orgs/${orgForm.value.id}`, 
+        dataToSend
+      );
+      console.log("Успешное обновление:", response.data);
     } else {
-      await axios.post("http://localhost:3000/api/orgs", orgForm.value);
+      // Для создания новой организации
+      const response = await axios.post(
+        "http://localhost:3000/api/orgs", 
+        dataToSend
+      );
+      console.log("Успешное создание:", response.data);
     }
+    
     closeModal();
-    fetchOrganizations(); 
+    fetchOrganizations();
   } catch (error) {
-    if (error.response && error.response.data.error) {
-      errors.value = { general: error.response.data.error };
+    console.error("Полная ошибка:", error);
+    
+    if (error.response) {
+      console.log("Ответ сервера:", error.response.data);
+      
+      // Обработка различных форматов ошибок
+      if (error.response.data.error) {
+        errors.value = { general: error.response.data.error };
+      }
+      
+      if (error.response.data.details) {
+        errors.value = error.response.data.details.reduce((acc, item) => {
+          acc[item.path] = item.message;
+          return acc;
+        }, {});
+      }
+    } else {
+      // Если нет ответа от сервера
+      errors.value = { general: "Ошибка соединения с сервером" };
     }
-    if (error.response && error.response.data.details) {
-      errors.value = error.response.data.details.reduce((acc, item) => {
-        acc[item.path] = item.message;
-        return acc;
-      }, {});
-    }
-    console.error("Ошибка при сохранении организации:", error);
   }
 };
+
 
 const deleteOrganization = async (id) => {
   try {
@@ -137,5 +167,8 @@ onMounted(fetchOrganizations);
   background: white;
   padding: 20px;
   border-radius: 5px;
+}
+.error {
+  color: red;
 }
 </style>

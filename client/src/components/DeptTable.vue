@@ -3,14 +3,14 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 const departments = ref([]);
-
+const organizations = ref([]);  // Для хранения списка организаций
 const showModal = ref(false);
-
-const errors = ref({}); 
+const errors = ref({});
 
 const departmentForm = ref({
   id: null,
   name: "",
+  organization_id: null, // По умолчанию пусто
 });
 
 const fetchDepartments = async () => {
@@ -24,30 +24,45 @@ const fetchDepartments = async () => {
   }
 };
 
-
+const fetchOrganizations = async () => {
+  try {
+    console.log("Запрашиваем организации...");
+    const response = await axios.get("http://localhost:3000/api/orgs");  
+    console.log("Ответ с API:", response.data);
+    organizations.value = response.data;
+  } catch (error) {
+    console.error("Ошибка при загрузке организаций:", error);
+  }
+};
 
 const openModal = (dept = null) => {
   if (dept) {
     departmentForm.value = { ...dept }; 
   } else {
-    departmentForm.value = { id: null, name: "" }; 
+    departmentForm.value = { id: null, name: "", organization_id: null }; 
   }
   showModal.value = true;
 };
-
 
 const closeModal = () => {
   showModal.value = false;
 };
 
-
 const saveDepartment = async () => {
   errors.value = {}; 
+
+
+  const dataToSend = { ...departmentForm.value };
+  if (!dataToSend.id) {
+    delete dataToSend.id; 
+  }
+
   try {
+    console.log("Отправка данных:", dataToSend); 
     if (departmentForm.value.id) {
-      await axios.put(`http://localhost:3000/api/dept/${departmentForm.value.id}`, departmentForm.value);
+      await axios.put(`http://localhost:3000/api/dept/${departmentForm.value.id}`, dataToSend);
     } else {
-      await axios.post("http://localhost:3000/api/dept", departmentForm.value);
+      await axios.post("http://localhost:3000/api/dept", dataToSend);
     }
     closeModal();
     fetchDepartments(); 
@@ -74,7 +89,10 @@ const deleteDepartment = async (id) => {
   }
 };
 
-onMounted(fetchDepartments);
+onMounted(() => {
+  fetchDepartments();
+  fetchOrganizations(); 
+});
 </script>
 
 <template>
@@ -87,6 +105,7 @@ onMounted(fetchDepartments);
         <tr>
           <th>ID</th>
           <th>Название</th>
+          <th>Комментарий</th>
           <th>Действия</th>
         </tr>
       </thead>
@@ -94,6 +113,7 @@ onMounted(fetchDepartments);
         <tr v-for="dept in departments" :key="dept.id">
           <td>{{ dept.id }}</td>
           <td>{{ dept.name }}</td>
+          <td>{{ dept.comment }}</td>
           <td>
             <button @click="openModal(dept)">Редактировать</button>
             <button @click="deleteDepartment(dept.id)">Удалить</button>
@@ -107,8 +127,22 @@ onMounted(fetchDepartments);
         <h3>{{ departmentForm.id ? "Редактировать отдел" : "Добавить отдел" }}</h3>
         <label>Название:</label>
         <input v-model="departmentForm.name" type="text" />
-
         <p v-if="errors.name" class="error">{{ errors.name }}</p>
+
+        <label>Организация:</label>
+        <select v-model="departmentForm.organization_id">
+          <option value="null">Не выбрана</option>
+          <option v-for="org in organizations" :key="org.id" :value="org.id">
+            {{ org.name }}
+          </option>
+        </select>
+        <p v-if="errors.organization_id" class="error">{{ errors.organization_id }}</p>
+
+        <label>Комментарий:</label>
+        <textarea v-model="departmentForm.comment"></textarea>
+        <p v-if="errors.comment" class="error">{{ errors.comment }}</p>
+
+
 
         <p v-if="errors.general" class="error">{{ errors.general }}</p>
 
@@ -135,5 +169,8 @@ onMounted(fetchDepartments);
   background: white;
   padding: 20px;
   border-radius: 5px;
+}
+.error {
+  color: red;
 }
 </style>

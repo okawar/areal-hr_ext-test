@@ -38,27 +38,42 @@ const closeModal = () => {
 const savePosition = async () => {
   errors.value = {}; 
 
+  const dataToSend = { ...positionForm.value };
+  if (!dataToSend.id) {
+    delete dataToSend.id;
+  }
+
   try {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8'
+      }
+    };
+
     if (positionForm.value.id) {
-      await axios.put(`http://localhost:3000/api/pos/${positionForm.value.id}`, positionForm.value);
+      await axios.put(`http://localhost:3000/api/pos/${positionForm.value.id}`, dataToSend, config);
     } else {
-      await axios.post("http://localhost:3000/api/pos", positionForm.value);
+      await axios.post("http://localhost:3000/api/pos", dataToSend, config);
     }
     closeModal();
     fetchPositions();
   } catch (error) {
-    if (error.response && error.response.data.error) {
-      errors.value = { general: error.response.data.error };
+    console.error("Ошибка при сохранении должности:", error.response);
+
+    if (error.response && error.response.data) {
+      if (error.response.data.error) {
+        errors.value = { general: error.response.data.error };
+      }
+      if (error.response.data.details) {
+        errors.value = error.response.data.details.reduce((acc, item) => {
+          acc[item.path] = item.message;
+          return acc;
+        }, {});
+      }
     }
-    if (error.response && error.response.data.details) {
-      errors.value = error.response.data.details.reduce((acc, item) => {
-        acc[item.path] = item.message;
-        return acc;
-      }, {});
-    }
-    console.error("Ошибка при сохранении должности:", error);
   }
 };
+
 
 const deletePosition = async (id) => {
   try {

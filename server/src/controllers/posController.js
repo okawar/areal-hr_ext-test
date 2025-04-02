@@ -5,10 +5,9 @@ const idSchema = Joi.object({
     id: Joi.number().integer().positive().required()
 });
 
-const updatePositionSchema = Joi.object({
+const positionSchema = Joi.object({
     name: Joi.string().min(2).max(100).required()
 });
-
 
 const getPos = async (req, res) => {
     try {
@@ -36,9 +35,18 @@ const createPos = async (req, res) => {
     }
     
     try {
-        const result = await pool.query('INSERT INTO positions (name, created_at) VALUES ($1, NOW()) RETURNING *', [value.name]);
+        // Не передаем id при добавлении новой должности
+        const result = await pool.query(
+            'INSERT INTO positions (name, created_at) VALUES ($1, NOW()) RETURNING *',
+            [value.name]
+        );
         res.json(result.rows[0]);
     } catch (err) {
+        // Если ошибка при вставке, например, нарушена уникальность поля name
+        if (err.code === '23505') {
+            // Код ошибки для уникального ограничения
+            return res.status(400).json({ error: 'Должность с таким названием уже существует' });
+        }
         res.status(500).json({ error: err.message });
     }
 };
@@ -51,7 +59,7 @@ const updatePos = async (req, res) => {
 
     const { id, is_deleted, created_at, updated_at, deleted_at, ...data } = req.body;
 
-    const { error, value } = updatePositionSchema.validate(data);
+    const { error, value } = positionSchema.validate(data);
     if (error) {
         return res.status(400).json({ error: error.details[0].message });
     }
