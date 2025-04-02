@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate:create": "cd server && npx node-pg-migrate create",
+    "migrate:up": "cd server && npx node-pg-migrate up --config pg-migrate-config.js",
+    "migrate:down": "cd server && npx node-pg-migrate down --config pg-migrate-config.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +17,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "joi": "^17.13.3",
+    "node-pg-migrate": "^7.9.1",
     "pg": "^8.14.1"
   }
 }
