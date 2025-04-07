@@ -1,28 +1,8 @@
-const Joi = require("joi");
 const pool = require("../database/database");
 
-const idSchema = Joi.object({ 
-  id: Joi.number().integer().positive().required() 
-});
+const {operationSchema} = require("../validation/operation.schema")
+const { idSchema } = require("../validation/id.schema");
 
-const operationSchema = Joi.object({
-  employee_id: Joi.number().integer().positive().required(),
-  department_id: Joi.number().integer().positive().optional(),
-  position_id: Joi.number().integer().positive().optional(),
-  operation_type: Joi.string().valid(
-    'Прием на работу',
-    'Увольнение',
-    'Изменение зарплаты',
-    'Изменение отдела',
-    'Изменение должности',
-    'Командировка',
-    'Отпуск',
-    'Больничный'
-  ).required(),
-  salary: Joi.number().positive().optional(),
-  operation_date: Joi.date().required(),
-  comment: Joi.string().allow("").optional()
-});
 
 const getOperations = async (req, res) => {
   try {

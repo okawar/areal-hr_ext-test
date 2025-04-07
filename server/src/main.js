@@ -26,5 +26,5 @@ app.use('/api/file', fileRoutes);
 app.use('/api/changeHistory', changeHistoryRoutes);
 
 const PORT = 3000
-const HOST = process.env.POSTGRES_HOST 
-app.listen(PORT, () => console.log(`Сервер работает на ${HOST}: ${PORT}`))
+const HOST = process.env.APP_URL 
+app.listen(PORT, () => console.log(`Сервер работает на ${HOST}`))

@@ -1,13 +1,8 @@
-const Joi = require("joi");
 const pool = require("../database/database");
-const idSchema = Joi.object({
-    id: Joi.number().integer().positive().required()
-});
-const orgSchema = Joi.object({
-    id: Joi.number().integer().optional(),
-    name: Joi.string().min(2).max(100).required(),
-    comment: Joi.string().allow("").optional()
-});
+
+const {orgSchema} = require("../validation/org.schema")
+const {idSchema} = require("../validation/id.schema")
+
 const getOrgs = async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM organizations WHERE is_deleted = FALSE");

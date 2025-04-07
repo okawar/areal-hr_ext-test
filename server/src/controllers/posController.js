@@ -1,13 +1,7 @@
 const pool = require('../database/database');
-const Joi = require('joi');
 
-const idSchema = Joi.object({
-    id: Joi.number().integer().positive().required()
-});
-
-const positionSchema = Joi.object({
-    name: Joi.string().min(2).max(100).required()
-});
+const {positionSchema} = require("../validation/pos.schema")
+const {idSchema} = require("../validation/id.schema")
 
 const getPos = async (req, res) => {
     try {

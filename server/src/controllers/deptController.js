@@ -1,16 +1,7 @@
-const Joi = require("joi");
 const pool = require("../database/database");
 
-const idSchema = Joi.object({
-    id: Joi.number().integer().positive().required()
-});
-
-const deptSchema = Joi.object({
-    name: Joi.string().min(2).max(100).required(),
-    organization_id: Joi.number().integer().positive().required(),
-    parent_id: Joi.number().integer().positive().allow(null).optional(),
-    comment: Joi.string().allow("").optional()
-});
+const { idSchema } = require("../validation/id.schema");
+const { deptSchema } = require("../validation/dept.schema");
 
 const getDepts = async (req, res) => {
     try {

@@ -1,14 +1,7 @@
-const Joi = require("joi");
 const pool = require("../database/database");
 
-const idSchema = Joi.object({ id: Joi.number().integer().positive().required() });
-
-const fileSchema = Joi.object({
-    employee_id: Joi.number().integer().positive().required(),
-    file_name: Joi.string().required(),
-    file_path: Joi.string().required(),
-    comment: Joi.string().allow("").optional()
-});
+const {fileSchema} = require("../validation/file.schema")
+const { idSchema } = require("../validation/id.schema");
 
 const getFile = async (req, res) => {
     try {
