@@ -29,6 +29,7 @@ import PositionTable from './components/PosTable.vue'
 import EmployeeTable from './components/EmpTable.vue'
 import FileTable from './components/FileTable.vue'
 import HrOpTable from './components/HrOpTable.vue'
+import ChangeHistory from './components/ChangeHistoryTable.vue'
 
 const tabs = [
   { name: 'Отделы', component: DeptTable },
@@ -37,6 +38,7 @@ const tabs = [
   { name: 'Сотрудники', component: EmployeeTable },
   { name: 'Файлы', component: FileTable },
   { name: 'Операции', component: HrOpTable },
+  { name: 'История изменений', component: ChangeHistory },
 ]
 
 const activeTab = ref(0)

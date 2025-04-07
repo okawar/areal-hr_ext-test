@@ -15,6 +15,7 @@ const deptRoutes = require('./routes/deptRoutes');
 const empRoutes = require('./routes/empRoutes');
 const hrOpRoutes = require('./routes/hrOpRoutes');
 const fileRoutes = require('./routes/fileRoutes');
+const changeHistoryRoutes = require('./routes/changeHistoryRoutes');
 
 app.use('/api/orgs', orgRoutes);
 app.use('/api/dept', deptRoutes);
@@ -22,6 +23,7 @@ app.use('/api/pos', posRoutes);
 app.use('/api/emp', empRoutes);
 app.use('/api/hrOp', hrOpRoutes);
 app.use('/api/file', fileRoutes);
+app.use('/api/changeHistory', changeHistoryRoutes);
 
 const PORT = 3000
 const HOST = process.env.POSTGRES_HOST 
