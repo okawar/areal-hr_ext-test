@@ -1,3 +1,26 @@
+<script setup>
+import { ref } from 'vue'
+import DepartmentsView from './components/departments/DepartmentsView.vue'
+import OrganizationsView from './components/organizations/OrganizationsView.vue'
+import PositionsView from './components/positions/PositionsView.vue'
+import EmployeesView from './components/employees/EmployeesView.vue'
+import FilesView from './components/files/FilesView.vue'
+import HrOperationsView from './components/hrOperations/HrOperationsView.vue'
+import ChangeHistoryView from './components/changeHistory/ChangeHistoryView.vue'
+
+const tabs = [
+  { name: 'Отделы', component: DepartmentsView },
+  { name: 'Организации', component: OrganizationsView },
+  { name: 'Должности', component: PositionsView },
+  { name: 'Сотрудники', component: EmployeesView },
+  { name: 'Файлы', component: FilesView },
+  { name: 'Операции', component: HrOperationsView },
+  { name: 'История изменений', component: ChangeHistoryView },
+]
+
+const activeTab = ref(0)
+</script>
+
 <template>
   <div class="w-full p-4">
     <div class="flex space-x-2 mb-4 border-b border-gray-300">
@@ -15,60 +38,10 @@
       </button>
     </div>
 
-    <div class="bg-white p-4 rounded-b-xl shadow-md">
-      <component :is="tabs[activeTab].component" />
+    <div class="bg-white rounded-b-xl shadow-md">
+      <keep-alive>
+        <component :is="tabs[activeTab].component" />
+      </keep-alive>
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import DeptTable from './components/DeptTable.vue'
-import OrgTable from './components/OrgTable.vue'
-import PositionTable from './components/PosTable.vue'
-import EmployeeTable from './components/EmpTable.vue'
-import FileTable from './components/FileTable.vue'
-import HrOpTable from './components/HrOpTable.vue'
-import ChangeHistory from './components/ChangeHistoryTable.vue'
-
-const tabs = [
-  { name: 'Отделы', component: DeptTable },
-  { name: 'Организации', component: OrgTable },
-  { name: 'Должности', component: PositionTable },
-  { name: 'Сотрудники', component: EmployeeTable },
-  { name: 'Файлы', component: FileTable },
-  { name: 'Операции', component: HrOpTable },
-  { name: 'История изменений', component: ChangeHistory },
-]
-
-const activeTab = ref(0)
-</script>
-
-<style scoped>
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-  font-size: 14px;
-}
-
-th, td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-th {
-  background-color: #f3f4f6;
-  font-weight: 600;
-  color: #374151;
-}
-
-tr:hover {
-  background-color: #f9fafb;
-}
-
-button {
-  transition: all 0.2s;
-}
-</style>
