@@ -17,15 +17,11 @@ const formatDate = (dateString) => {
 const getChangedData = (changedFields) => {
   if (!changedFields) return null;
   
-  if (changedFields.action === 'create') {
-    return changedFields.fields || {};
-  } else if (changedFields.action === 'update') {
-    return changedFields.fields || {};
-  } else if (changedFields.action === 'delete') {
-    return {};
-  }
+  const fields = {...changedFields};
   
-  return null;
+  delete fields.action;
+  
+  return fields;
 };
 
 const getAction = (changedFields) => {

@@ -16,6 +16,7 @@ const fetchHistory = async () => {
 };
 
 onMounted(fetchHistory);
+
 </script>
 
 <template>

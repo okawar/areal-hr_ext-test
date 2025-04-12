@@ -45,7 +45,7 @@ const handleDelete = async (id) => {
         <tr v-for="file in files" :key="file.id" class="hover:bg-gray-50 transition">
           <td class="px-6 py-4">{{ file.id }}</td>
           <td class="px-6 py-4">{{ getEmployeeName(file.employee_id) }}</td>
-          <td class="px-6 py-4">{{ file.name }}</td>
+          <td class="px-6 py-4">{{ file.file_name }}</td>
           <td class="px-6 py-4">{{ file.file_path }}</td>
           <td class="px-6 py-4 space-x-2">
             <button 

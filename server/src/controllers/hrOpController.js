@@ -3,6 +3,8 @@ const pool = require("../database/database");
 const {operationSchema} = require("../validation/operation.schema")
 const { idSchema } = require("../validation/id.schema");
 
+const { logChanges } = require('../utils/historyLogger');
+
 
 const getOperations = async (req, res) => {
   try {
@@ -98,7 +100,11 @@ const createOperation = async (req, res) => {
       value.comment || ""
     ]);
     
-    res.status(201).json(result.rows[0]);
+    const createdOperation = result.rows[0];
+    
+    await logChanges('hr_operation', createdOperation.id, null, createdOperation, 'create', req.user?.id || 1);
+    
+    res.status(201).json(createdOperation);
   } catch (err) {
     console.error('Error creating operation:', err);
     res.status(500).json({ 
@@ -122,6 +128,19 @@ const updateOperation = async (req, res) => {
   });
 
   try {
+    const currentResult = await pool.query(
+      "SELECT * FROM hr_operations WHERE id = $1", 
+      [req.params.id]
+    );
+    
+    if (!currentResult.rowCount) {
+      return res.status(404).json({ 
+        error: 'Операция не найдена' 
+      });
+    }
+    
+    const currentOperation = currentResult.rows[0];
+    
     const updateQuery = `
       UPDATE hr_operations SET 
         employee_id = $1,
@@ -146,13 +165,11 @@ const updateOperation = async (req, res) => {
       req.params.id
     ]);
     
-    if (!result.rowCount) {
-      return res.status(404).json({ 
-        error: 'Операция не найдена' 
-      });
-    }
+    const updatedOperation = result.rows[0];
     
-    res.json(result.rows[0]);
+    await logChanges('hr_operation', req.params.id, currentOperation, updatedOperation, 'update', req.user?.id || 1);
+    
+    res.json(updatedOperation);
   } catch (err) {
     console.error('Error updating operation:', err);
     res.status(500).json({ 
@@ -170,6 +187,19 @@ const deleteOperation = async (req, res) => {
   });
 
   try {
+    const currentResult = await pool.query(
+      "SELECT * FROM hr_operations WHERE id = $1", 
+      [req.params.id]
+    );
+    
+    if (!currentResult.rowCount) {
+      return res.status(404).json({ 
+        error: 'Операция не найдена' 
+      });
+    }
+    
+    const currentOperation = currentResult.rows[0];
+    
     const query = `
       DELETE FROM hr_operations 
       WHERE id = $1
@@ -178,12 +208,8 @@ const deleteOperation = async (req, res) => {
     
     const result = await pool.query(query, [req.params.id]);
     
-    if (!result.rowCount) {
-      return res.status(404).json({ 
-        error: 'Операция не найдена' 
-      });
-    }
-
+    await logChanges('hr_operation', req.params.id, currentOperation, null, 'delete', req.user?.id || 1);
+    
     res.json({ 
       message: 'Операция успешно удалена',
       deletedOperation: result.rows[0] 
@@ -196,7 +222,6 @@ const deleteOperation = async (req, res) => {
     });
   }
 };
-
 module.exports = { 
   getOperations, 
   getOperationById, 

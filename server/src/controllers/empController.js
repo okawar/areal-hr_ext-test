@@ -3,6 +3,8 @@ const pool = require("../database/database");
 const { EmpSchema } = require("../validation/employee.schema");
 const { idSchema } = require("../validation/id.schema");
 
+const { logChanges } = require('../utils/historyLogger');
+
 
 const getEmp = async (req, res) => {
     try {
@@ -67,7 +69,12 @@ const createEmp = async (req, res) => {
                 value.department_id, value.position_id
             ]
         );
-        res.json(result.rows[0]);
+        
+        const createdEmp = result.rows[0];
+        
+        await logChanges('employee', createdEmp.id, null, createdEmp, 'create', req.user?.id || 1);
+        
+        res.json(createdEmp);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -82,8 +89,13 @@ const updateEmp = async (req, res) => {
     if (error) return res.status(400).json({ error: error.details[0].message });
 
     try {
-        const check = await pool.query("SELECT 1 FROM employees WHERE id = $1 AND is_deleted = FALSE", [req.params.id]);
-        if (!check.rowCount) return res.status(404).json({ error: "Сотрудник не найден" });
+        const currentResult = await pool.query(
+            "SELECT * FROM employees WHERE id = $1 AND is_deleted = FALSE", 
+            [req.params.id]
+        );
+        
+        if (!currentResult.rowCount) return res.status(404).json({ error: "Сотрудник не найден" });
+        const currentEmp = currentResult.rows[0];
 
         const result = await pool.query(
             `UPDATE employees 
@@ -102,7 +114,12 @@ const updateEmp = async (req, res) => {
                 req.params.id
             ]
         );
-        res.json(result.rows[0]);
+        
+        const updatedEmp = result.rows[0];
+        
+        await logChanges('employee', req.params.id, currentEmp, updatedEmp, 'update', req.user?.id || 1);
+        
+        res.json(updatedEmp);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -113,11 +130,20 @@ const deleteEmp = async (req, res) => {
     if (error) return res.status(400).json({ error: error.details[0].message });
 
     try {
+        const currentResult = await pool.query(
+            "SELECT * FROM employees WHERE id = $1 AND is_deleted = FALSE", 
+            [req.params.id]
+        );
+        
+        if (!currentResult.rowCount) return res.status(404).json({ error: "Сотрудник не найден" });
+        const currentEmp = currentResult.rows[0];
+        
         const result = await pool.query(
             "UPDATE employees SET is_deleted = TRUE, deleted_at = NOW() WHERE id = $1 RETURNING *", 
             [req.params.id]
         );
-        if (!result.rowCount) return res.status(404).json({ error: "Сотрудник не найден" });
+
+        await logChanges('employee', req.params.id, currentEmp, null, 'delete', req.user?.id || 1);
 
         res.json({ message: "Сотрудник удален" });
     } catch (err) {

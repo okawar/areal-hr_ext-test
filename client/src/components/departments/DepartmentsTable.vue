@@ -30,39 +30,57 @@ const handleDelete = async (id) => {
 </script>
 
 <template>
-  <div class="overflow-x-auto bg-white rounded-2xl shadow-md">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wider">
-        <tr>
-          <th class="px-6 py-4 text-left">ID</th>
-          <th class="px-6 py-4 text-left">Название</th>
-          <th class="px-6 py-4 text-left">Организация</th>
-          <th class="px-6 py-4 text-left">Действия</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        <tr v-for="department in departments" :key="department.id" class="hover:bg-gray-50 transition">
-          <td class="px-6 py-4">{{ department.id }}</td>
-          <td class="px-6 py-4">{{ department.name }}</td>
-          <td class="px-6 py-4">
-            {{ getOrganizationName(department.organization_id) }}
-          </td>
-          <td class="px-6 py-4 space-x-2">
-            <button
-              @click="$emit('edit', department)"
-              class="text-sm px-3 py-1 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition"
-            >
-              Редактировать
-            </button>
-            <button
-              @click="handleDelete(department.id)"
-              class="text-sm px-3 py-1 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
-            >
-              Удалить
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              ID
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Название
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Организация
+            </th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Действия
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr v-for="department in departments" :key="department.id" class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {{ department.id }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ department.name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {{ getOrganizationName(department.organization_id) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <div class="flex justify-end space-x-2">
+                <button
+                  @click="$emit('edit', department)"
+                  class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Редактировать
+                </button>
+                <button
+                  @click="handleDelete(department.id)"
+                  class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Удалить
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
