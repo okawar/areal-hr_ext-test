@@ -80,13 +80,12 @@ const createOperation = async (req, res) => {
         employee_id, 
         department_id, 
         position_id, 
-        operation_type, 
+        action_type, 
         salary, 
         operation_date, 
-        comment, 
         created_at
       ) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) 
+      VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
       RETURNING *
     `;
     
@@ -94,15 +93,14 @@ const createOperation = async (req, res) => {
       value.employee_id,
       value.department_id || null,
       value.position_id || null,
-      value.operation_type,
+      value.action_type,
       value.salary || null,
       value.operation_date,
-      value.comment || ""
     ]);
     
     const createdOperation = result.rows[0];
     
-    await logChanges('hr_operation', createdOperation.id, null, createdOperation, 'create', req.user?.id || 1);
+    await logChanges('hr_operations', createdOperation.id, null, createdOperation, 'create', req.user?.id || 1);
     
     res.status(201).json(createdOperation);
   } catch (err) {
@@ -142,32 +140,31 @@ const updateOperation = async (req, res) => {
     const currentOperation = currentResult.rows[0];
     
     const updateQuery = `
-      UPDATE hr_operations SET 
-        employee_id = $1,
-        department_id = $2,
-        position_id = $3,
-        operation_type = $4,
-        salary = $5,
-        operation_date = $6,
-        comment = $7
-      WHERE id = $8
-      RETURNING *
-    `;
+    UPDATE hr_operations SET 
+      employee_id = $1,
+      department_id = $2,
+      position_id = $3,
+      action_type = $4,
+      salary = $5,
+      operation_date = $6
+    WHERE id = $7
+    RETURNING *
+  `;
+  
     
     const result = await pool.query(updateQuery, [
       value.employee_id,
       value.department_id || null,
       value.position_id || null,
-      value.operation_type,
+      value.action_type,
       value.salary || null,
       value.operation_date,
-      value.comment || "",
       req.params.id
     ]);
     
     const updatedOperation = result.rows[0];
     
-    await logChanges('hr_operation', req.params.id, currentOperation, updatedOperation, 'update', req.user?.id || 1);
+    await logChanges('hr_operations', req.params.id, currentOperation, updatedOperation, 'update', req.user?.id || 1);
     
     res.json(updatedOperation);
   } catch (err) {
@@ -208,7 +205,7 @@ const deleteOperation = async (req, res) => {
     
     const result = await pool.query(query, [req.params.id]);
     
-    await logChanges('hr_operation', req.params.id, currentOperation, null, 'delete', req.user?.id || 1);
+    await logChanges('hr_operations', req.params.id, currentOperation, null, 'delete', req.user?.id || 1);
     
     res.json({ 
       message: 'Операция успешно удалена',

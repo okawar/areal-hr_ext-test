@@ -1,57 +1,66 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import PositionsTable from './PositionsTable.vue';
-import PositionsFormModal from './PositionsFormModal.vue';
-import positionsApi from '../../api/positions';
+import { ref, computed, onMounted } from 'vue'
+import PositionsTable from './PositionsTable.vue'
+import PositionsFormModal from './PositionsFormModal.vue'
+import positionsApi from '../../api/positions'
+import UiInput from '../../components/ui/UiInput.vue'
+import UiButton from '../../components/ui/UiButton.vue'
 
-const positions = ref([]);
-const showModal = ref(false);
-const currentPosition = ref(null);
-const errors = ref({});
+const positions = ref([])
+const search = ref('')
+const showModal = ref(false)
+const currentPosition = ref(null)
+const errors = ref({})
 
 const fetchPositions = async () => {
   try {
-    const response = await positionsApi.fetchAll();
-    positions.value = response.data.sort((a, b) => a.id - b.id);
-  } catch (error) {
-    console.error("Ошибка при загрузке должностей:", error);
+    const res = await positionsApi.fetchAll()
+    if (Array.isArray(res.data)) {
+      positions.value = res.data.sort((a, b) => a.id - b.id)
+    } else {
+      console.warn('Получены невалидные данные от API:', res.data)
+      positions.value = []
+    }
+  } catch (e) {
+    console.error('Ошибка при загрузке должностей:', e)
+    positions.value = []
   }
-};
+}
 
-const openModal = (pos = null) => {
-  errors.value = {};
-  currentPosition.value = pos;
-  showModal.value = true;
-};
+const openModal = (position = null) => {
+  errors.value = {}
+  currentPosition.value = position
+  showModal.value = true
+}
 
 const closeModal = () => {
-  showModal.value = false;
-};
+  showModal.value = false
+}
 
 const handleSave = async () => {
-  await fetchPositions();
-  closeModal();
-};
+  await fetchPositions()
+  closeModal()
+}
 
 const handleError = (error) => {
-  console.error("Ошибка при сохранении должности:", error.response);
-
-  if (error.response && error.response.data) {
-    if (error.response.data.error) {
-      errors.value = { general: error.response.data.error };
-    }
-    if (error.response.data.details) {
-      errors.value = error.response.data.details.reduce((acc, item) => {
-        acc[item.path] = item.message;
-        return acc;
-      }, {});
-    }
+  if (error.response?.data?.errors) {
+    errors.value = error.response.data.errors
+  } else if (error.response?.data?.error) {
+    errors.value.general = error.response.data.error
   } else {
-    errors.value = { general: "Ошибка соединения с сервером" };
+    errors.value.general = 'Произошла ошибка при сохранении'
   }
-};
+}
 
-onMounted(fetchPositions);
+const filteredPositions = computed(() => {
+  return positions.value.filter(pos =>
+    pos.name.toLowerCase().includes(search.value.toLowerCase())
+  )
+})
+
+onMounted(() => {
+  fetchPositions()
+})
 </script>
 
 <template>
@@ -59,16 +68,18 @@ onMounted(fetchPositions);
     <h1 class="text-3xl font-bold mb-6 text-black">Управление должностями</h1>
 
     <div class="mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-      <button
-        @click="openModal()"
-        class="w-full md:w-auto px-6 py-2 bg-purple-600 text-white rounded-xl shadow-md hover:bg-purple-700 transition duration-200"
-      >
+      <UiInput
+        v-model="search"
+        class="w-full md:w-1/3"
+        placeholder="Поиск должностей..."
+      />
+      <UiButton @click="openModal" class="w-full md:w-auto">
         Добавить должность
-      </button>
+      </UiButton>
     </div>
 
     <PositionsTable
-      :positions="positions"
+      :positions="filteredPositions"
       @edit="openModal"
       @delete="positionsApi.delete"
       @refresh="fetchPositions"

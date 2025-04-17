@@ -4,6 +4,8 @@ import DepartmentsTable from './DepartmentsTable.vue'
 import departmentsApi from '../../api/departments'
 import organizationsApi from '../../api/organizations'
 import DepartmentsFormModal from './DepartmentsFormModal.vue'
+import UiInput from '../../components/ui/UiInput.vue'
+import UiButton from '../../components/ui/UiButton.vue'
 
 const departments = ref([])
 const organizations = ref([])
@@ -61,23 +63,20 @@ onMounted(() => {
 })
 </script>
 
+
 <template>
   <div class="p-6 bg-gray-50 min-h-screen text-gray-800">
     <h1 class="text-3xl font-bold mb-6 text-black">Управление отделами</h1>
 
     <div class="mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-      <input
-        type="text"
+      <UiInput
         v-model="search"
-        class="w-full md:w-1/3 px-4 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-purple-600 focus:border-purple-600"
+        class="w-full md:w-1/3"
         placeholder="Поиск отделов..."
       />
-      <button
-        @click="openModal"
-        class="w-full md:w-auto px-6 py-2 bg-purple-600 text-white rounded-xl shadow-md hover:bg-purple-700 transition duration-200"
-      >
+      <UiButton @click="openModal" class="w-full md:w-auto">
         Добавить отдел
-      </button>
+      </UiButton>
     </div>
 
     <DepartmentsTable
@@ -97,3 +96,4 @@ onMounted(() => {
     />
   </div>
 </template>
+

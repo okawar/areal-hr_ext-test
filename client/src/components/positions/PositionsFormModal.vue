@@ -1,64 +1,53 @@
 <script setup>
-import { ref, watch } from 'vue';
-import positionsApi from '../../api/positions';
+import { ref, watch } from 'vue'
+import positionsApi from '../../api/positions'
+import UiInput from '../ui/UiInput.vue'
+import UiButton from '../ui/UiButton.vue'
 
 const props = defineProps({
-  position: {
-    type: Object,
-    default: null
-  },
-  errors: {
-    type: Object,
-    default: () => ({})
-  }
-});
+  position: Object,
+  errors: Object
+})
 
-const emit = defineEmits(['close', 'save', 'error']);
+const emit = defineEmits(['close', 'save', 'error'])
 
 const form = ref({
   id: null,
-  name: ""
-});
+  name: ''
+})
 
-const save = async () => {
-  const dataToSend = { ...form.value };
-  if (!dataToSend.id) {
-    delete dataToSend.id;
-  }
-
-  try {
-    const config = {
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8'
-      }
-    };
-
-    if (form.value.id) {
-      await positionsApi.update(form.value.id, dataToSend, config);
-    } else {
-      await positionsApi.create(dataToSend, config);
-    }
-    
-    emit('save');
-  } catch (error) {
-    emit('error', error);
-  }
-};
-
-// Заполняем форму при изменении пропса position
 watch(() => props.position, (position) => {
   if (position) {
-    form.value = { ...position };
+    form.value = { ...position }
   } else {
-    form.value = { id: null, name: "" };
+    resetForm()
   }
-}, { immediate: true });
+}, { immediate: true })
+
+const resetForm = () => {
+  form.value = {
+    id: null,
+    name: ''
+  }
+}
+
+const save = async () => {
+  try {
+    if (form.value.id) {
+      await positionsApi.update(form.value.id, form.value)
+    } else {
+      await positionsApi.create(form.value)
+    }
+    emit('save')
+  } catch (e) {
+    emit('error', e)
+  }
+}
 </script>
 
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" @click="emit('close')"></div>
-
+    <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" @click="emit('close')" />
     <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50">
       <h2 class="text-xl font-semibold text-black mb-4">
         {{ form.id ? 'Редактирование должности' : 'Добавление должности' }}
@@ -69,65 +58,19 @@ watch(() => props.position, (position) => {
       </div>
 
       <div class="space-y-4">
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700">Название должности</label>
-          <input
-            type="text"
-            id="name"
-            v-model="form.name"
-            class="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-purple-600 focus:border-purple-600 sm:text-sm"
-            :class="{ 'border-red-500': errors.name }"
-            placeholder="Введите название должности"
-          />
-          <p v-if="errors.name" class="text-sm text-red-600 mt-1">{{ errors.name }}</p>
-        </div>
+        <UiInput
+          id="name"
+          v-model="form.name"
+          label="Название должности"
+          placeholder="Введите название"
+          :error="errors.name"
+        />
       </div>
 
       <div class="mt-6 flex justify-end space-x-3">
-        <button
-          @click="emit('close')"
-          class="px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition"
-        >
-          Отмена
-        </button>
-        <button
-          @click="save"
-          class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition"
-        >
-          Сохранить
-        </button>
+        <UiButton variant="secondary" @click="emit('close')">Отмена</UiButton>
+        <UiButton @click="save">Сохранить</UiButton>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-
-.modal-enter-active {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-.modal-leave-active {
-  animation: fadeOut 0.2s ease-in forwards;
-}
-</style>

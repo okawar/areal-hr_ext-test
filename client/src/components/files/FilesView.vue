@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import FilesTable from './FilesTable.vue'
 import filesApi from '../../api/files'
 import employeesApi from '../../api/employees'
-import FilesFormModal from './FilesFormModal.vue'
+import FilesFormModal from '../employees/FilesFormModal.vue'
 
 const files = ref([])
 const employees = ref([])

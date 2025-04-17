@@ -1,23 +1,18 @@
 <script setup>
 import { ref, watch } from 'vue'
 import employeesApi from '../../api/employees'
+import UiInput from '../ui/UiInput.vue'
+import UiSelect from '../ui/UiSelect.vue'
+import UiButton from '../ui/UiButton.vue'
 
 const props = defineProps({
-  employee: {
-    type: Object,
-    default: null
-  },
-  departments: {
-    type: Array,
-    required: true
-  },
-  positions: {
-    type: Array,
-    required: true
-  }
+  employee: Object,
+  departments: Array,
+  positions: Array,
+  errors: Object
 })
 
-const emit = defineEmits(['close', 'save'])
+const emit = defineEmits(['close', 'save', 'error'])
 
 const form = ref({
   id: null,
@@ -38,8 +33,6 @@ const form = ref({
   department_id: null,
   position_id: null
 })
-
-const errors = ref({})
 
 watch(() => props.employee, (emp) => {
   if (emp) {
@@ -72,7 +65,6 @@ const resetForm = () => {
 }
 
 const save = async () => {
-  errors.value = {}
   const dataToSend = { ...form.value }
   if (!dataToSend.id) delete dataToSend.id
 
@@ -83,26 +75,15 @@ const save = async () => {
       await employeesApi.create(dataToSend)
     }
     emit('save')
-  } catch (error) {
-    if (error.response && error.response.data) {
-      if (error.response.data.error) {
-        errors.value.general = error.response.data.error
-      }
-      if (error.response.data.details) {
-        errors.value = error.response.data.details.reduce((acc, item) => {
-          acc[item.path] = item.message
-          return acc
-        }, {})
-      }
-    }
+  } catch (e) {
+    emit('error', e)
   }
 }
 </script>
 
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" @click="emit('close')"></div>
-
+    <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" @click="emit('close')" />
     <div class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 z-50 overflow-y-auto max-h-[90vh]">
       <h2 class="text-xl font-semibold text-black mb-4">
         {{ form.id ? 'Редактирование сотрудника' : 'Добавление сотрудника' }}
@@ -113,89 +94,116 @@ const save = async () => {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Фамилия</label>
-          <input v-model="form.last_name" type="text" class="input" />
-          <p v-if="errors.last_name" class="text-sm text-red-600 mt-1">{{ errors.last_name }}</p>
-        </div>
+        <UiInput
+          v-model="form.last_name"
+          label="Фамилия"
+          placeholder="Введите фамилию"
+          :error="errors.last_name"
+        />
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Имя</label>
-          <input v-model="form.first_name" type="text" class="input" />
-          <p v-if="errors.first_name" class="text-sm text-red-600 mt-1">{{ errors.first_name }}</p>
-        </div>
+        <UiInput
+          v-model="form.first_name"
+          label="Имя"
+          placeholder="Введите имя"
+          :error="errors.first_name"
+        />
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Отчество</label>
-          <input v-model="form.middle_name" type="text" class="input" />
-        </div>
+        <UiInput
+          v-model="form.middle_name"
+          label="Отчество"
+          placeholder="Введите отчество"
+          :error="errors.middle_name"
+        />
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Дата рождения</label>
-          <input v-model="form.birth_date" type="date" class="input" />
-        </div>
+        <UiInput
+          v-model="form.birth_date"
+          type="date"
+          label="Дата рождения"
+          :error="errors.birth_date"
+        />
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Отдел</label>
-          <select v-model="form.department_id" class="input">
-            <option :value="null" disabled>Выберите отдел</option>
-            <option v-for="dept in departments" :key="dept.id" :value="dept.id">
-              {{ dept.name }}
-            </option>
-          </select>
-          <p v-if="errors.department_id" class="text-sm text-red-600 mt-1">{{ errors.department_id }}</p>
-        </div>
+        <UiSelect
+          v-model="form.department_id"
+          label="Отдел"
+          :options="departments"
+          :error="errors.department_id"
+        />
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Должность</label>
-          <select v-model="form.position_id" class="input">
-            <option :value="null" disabled>Выберите должность</option>
-            <option v-for="pos in positions" :key="pos.id" :value="pos.id">
-              {{ pos.name }}
-            </option>
-          </select>
-          <p v-if="errors.position_id" class="text-sm text-red-600 mt-1">{{ errors.position_id }}</p>
-        </div>
+        <UiSelect
+          v-model="form.position_id"
+          label="Должность"
+          :options="positions"
+          :error="errors.position_id"
+        />
 
-        <div class="col-span-2">
-          <label class="block text-sm font-medium text-gray-700">Паспорт</label>
-          <div class="flex gap-2">
-            <input v-model="form.passport_series" placeholder="Серия" class="input w-1/3" />
-            <input v-model="form.passport_number" placeholder="Номер" class="input w-2/3" />
+        <div class="col-span-2 space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Паспортные данные</label>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <UiInput
+              v-model="form.passport_series"
+              placeholder="Серия"
+              :error="errors.passport_series"
+            />
+            <UiInput
+              v-model="form.passport_number"
+              placeholder="Номер"
+              :error="errors.passport_number"
+            />
+            <UiInput
+              v-model="form.passport_issue_date"
+              type="date"
+              placeholder="Дата выдачи"
+              :error="errors.passport_issue_date"
+            />
           </div>
+          <UiInput
+            v-model="form.passport_issued_by"
+            placeholder="Кем выдан"
+            :error="errors.passport_issued_by"
+          />
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Дата выдачи</label>
-          <input v-model="form.passport_issue_date" type="date" class="input" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Кем выдан</label>
-          <input v-model="form.passport_issued_by" type="text" class="input" />
-        </div>
-
-        <div class="col-span-2">
+        <div class="col-span-2 space-y-2">
           <label class="block text-sm font-medium text-gray-700">Адрес</label>
-          <div class="grid grid-cols-2 gap-2">
-            <input v-model="form.region" placeholder="Регион" class="input" />
-            <input v-model="form.locality" placeholder="Город / населённый пункт" class="input" />
-            <input v-model="form.street" placeholder="Улица" class="input" />
-            <input v-model="form.house" placeholder="Дом" class="input" />
-            <input v-model="form.building" placeholder="Корпус" class="input" />
-            <input v-model="form.apartment" placeholder="Квартира" class="input" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <UiInput
+              v-model="form.region"
+              placeholder="Регион"
+              :error="errors.region"
+            />
+            <UiInput
+              v-model="form.locality"
+              placeholder="Город / населённый пункт"
+              :error="errors.locality"
+            />
+            <UiInput
+              v-model="form.street"
+              placeholder="Улица"
+              :error="errors.street"
+            />
+            <UiInput
+              v-model="form.house"
+              placeholder="Дом"
+              :error="errors.house"
+            />
+            <UiInput
+              v-model="form.building"
+              placeholder="Корпус"
+              :error="errors.building"
+            />
+            <UiInput
+              v-model="form.apartment"
+              placeholder="Квартира"
+              :error="errors.apartment"
+            />
           </div>
         </div>
       </div>
 
       <div class="mt-6 flex justify-end space-x-3">
-        <button @click="emit('close')" class="px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition">Отмена</button>
-        <button @click="save" class="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition">Сохранить</button>
+        <UiButton variant="secondary" @click="emit('close')">Отмена</UiButton>
+        <UiButton @click="save">Сохранить</UiButton>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-
-</style>

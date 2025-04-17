@@ -1,4 +1,6 @@
 <script setup>
+import UiButton from '../ui/UiButton.vue'
+
 const props = defineProps({
   departments: {
     type: Array,
@@ -33,7 +35,7 @@ const handleDelete = async (id) => {
   <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+        <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wider">
           <tr>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               ID
@@ -57,25 +59,25 @@ const handleDelete = async (id) => {
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               {{ department.name }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium">
                 {{ getOrganizationName(department.organization_id) }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <div class="flex justify-end space-x-2">
-                <button
+                <UiButton
                   @click="$emit('edit', department)"
-                  class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  class="px-3 py-1 bg-gray-100 text-gray-800 rounded-lg transition"
                 >
                   Редактировать
-                </button>
-                <button
+                </UiButton>
+                <UiButton
                   @click="handleDelete(department.id)"
-                  class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  class="px-3 py-1 bg-red-600 text-red-600 rounded-lg transition"
                 >
                   Удалить
-                </button>
+                </UiButton>
               </div>
             </td>
           </tr>

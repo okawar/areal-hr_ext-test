@@ -6,7 +6,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrate:create": "cd server && npx node-pg-migrate create",
     "migrate:up": "cd server && npx node-pg-migrate up --config pg-migrate-config.js",
-    "migrate:down": "cd server && npx node-pg-migrate down --config pg-migrate-config.js"
+    "migrate:down": "cd server && npx node-pg-migrate down --config pg-migrate-config.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "",
@@ -24,5 +26,13 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "eslint": "^9.24.0",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.2.6",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3"
   }
 }

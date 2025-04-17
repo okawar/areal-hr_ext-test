@@ -13,7 +13,7 @@ const tabs = [
   { name: 'Организации', component: OrganizationsView, color: 'bg-rose-100 text-rose-700 hover:bg-rose-200' },
   { name: 'Должности', component: PositionsView, color: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' },
   { name: 'Сотрудники', component: EmployeesView, color: 'bg-amber-100 text-amber-700 hover:bg-amber-200' },
-  { name: 'Файлы', component: FilesView, color: 'bg-blue-100 text-blue-700 hover:bg-blue-200' },
+  // { name: 'Файлы', component: FilesView, color: 'bg-blue-100 text-blue-700 hover:bg-blue-200' },
   { name: 'Операции', component: HrOperationsView, color: 'bg-purple-100 text-purple-700 hover:bg-purple-200' },
   { name: 'История изменений', component: ChangeHistoryView, color: 'bg-slate-100 text-slate-700 hover:bg-slate-200' },
 ]
