@@ -1,32 +1,32 @@
 <script setup>
-import UiButton from '../ui/UiButton.vue'
+import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
   employees: {
     type: Array,
-    required: true
+    required: true,
   },
   files: {
     type: Array,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
 const emit = defineEmits([
-  'edit-employee', 
-  'delete-employee', 
-  'edit-file', 
+  'edit-employee',
+  'delete-employee',
+  'edit-file',
   'delete-file',
-  'add-file'
-])
+  'add-file',
+]);
 
 const getFullName = (emp) => {
-  return `${emp.last_name} ${emp.first_name}${emp.middle_name ? ' ' + emp.middle_name : ''}`
-}
+  return `${emp.last_name} ${emp.first_name}${emp.middle_name ? ' ' + emp.middle_name : ''}`;
+};
 
 const getEmployeeFiles = (employeeId) => {
-  return props.files.filter(file => file.employee_id === employeeId)
-}
+  return props.files.filter((file) => file.employee_id === employeeId);
+};
 </script>
 
 <template>
@@ -35,22 +35,40 @@ const getEmployeeFiles = (employeeId) => {
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wider">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               ID
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               ФИО
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Отдел
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Должность
             </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Паспорт
             </th>
-            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Действия
             </th>
           </tr>
@@ -97,13 +115,27 @@ const getEmployeeFiles = (employeeId) => {
                 </div>
               </td>
             </tr>
-            
-            <tr v-for="file in getEmployeeFiles(emp.id)" :key="`file-${file.id}`" class="bg-gray-50">
-              <td class="px-6 py-2 text-sm text-gray-500">
-              </td>
+
+            <tr
+              v-for="file in getEmployeeFiles(emp.id)"
+              :key="`file-${file.id}`"
+              class="bg-gray-50"
+            >
+              <td class="px-6 py-2 text-sm text-gray-500"></td>
               <td colspan="4" class="px-6 py-2 text-sm flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 mr-2 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
                 <span class="font-medium">{{ file.file_name }}</span>
                 <span class="text-gray-500 ml-2">{{ file.comment || '' }}</span>

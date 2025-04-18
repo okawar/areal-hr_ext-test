@@ -1,6 +1,6 @@
 // utils/historyLogger.js
 
-const pool = require("../database/database");
+const pool = require('../database/database');
 
 /**
  * Сравнивает старые и новые данные, записывает изменения в таблицу change_history
@@ -12,11 +12,10 @@ const pool = require("../database/database");
  * @param {number} userId - ID пользователя
  */
 
-
 async function logChanges(objectType, objectId, oldData, newData, action, userId) {
-  const validTypes = ['employee', 'department', 'position', 'hr_operations', 'organization']; 
+  const validTypes = ['employee', 'department', 'position', 'hr_operations', 'organization'];
   if (!validTypes.includes(objectType)) {
-      throw new Error(`Invalid objectType: ${objectType}`);
+    throw new Error(`Invalid objectType: ${objectType}`);
   }
 
   const changedFields = {};
@@ -37,12 +36,10 @@ async function logChanges(objectType, objectId, oldData, newData, action, userId
     if (Object.keys(changedFields).length > 0) {
       changedFields.action = 'update';
     }
-  } 
-  else if (action === 'delete') {
+  } else if (action === 'delete') {
     changedFields.action = 'delete';
     changedFields.deleted = { old: false, new: true };
-  } 
-  else if (action === 'create') {
+  } else if (action === 'create') {
     changedFields.action = 'create';
     for (const key in newData) {
       if (newData[key] !== undefined) {
@@ -59,10 +56,5 @@ async function logChanges(objectType, objectId, oldData, newData, action, userId
     );
   }
 }
-
-  
-
-  
-  
 
 module.exports = { logChanges };

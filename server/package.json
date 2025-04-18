@@ -8,7 +8,8 @@
     "migrate:up": "cd server && npx node-pg-migrate up --config pg-migrate-config.js",
     "migrate:down": "cd server && npx node-pg-migrate down --config pg-migrate-config.js",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",

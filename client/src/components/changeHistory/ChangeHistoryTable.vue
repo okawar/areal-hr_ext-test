@@ -1,11 +1,10 @@
 <script setup>
-import { ref } from 'vue';
 
 const props = defineProps({
   history: {
     type: Array,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const formatDate = (dateString) => {
@@ -16,17 +15,17 @@ const formatDate = (dateString) => {
 
 const getChangedData = (changedFields) => {
   if (!changedFields) return null;
-  
-  const fields = {...changedFields};
-  
+
+  const fields = { ...changedFields };
+
   delete fields.action;
-  
+
   return fields;
 };
 
 const getAction = (changedFields) => {
   if (!changedFields) return 'неизвестно';
-  
+
   if (changedFields.action === 'create') {
     return 'создание';
   } else if (changedFields.action === 'update') {
@@ -34,7 +33,7 @@ const getAction = (changedFields) => {
   } else if (changedFields.action === 'delete') {
     return 'удаление';
   }
-  
+
   return changedFields.action || 'неизвестно';
 };
 </script>
@@ -60,8 +59,8 @@ const getAction = (changedFields) => {
           <td class="px-6 py-4">{{ item.object_id }}</td>
           <td class="px-6 py-4">{{ getAction(item.changed_fields) }}</td>
           <td class="px-6 py-4">
-            <pre class="whitespace-pre-wrap text-sm">{{ 
-              JSON.stringify(getChangedData(item.changed_fields), null, 2) || '-' 
+            <pre class="whitespace-pre-wrap text-sm">{{
+              JSON.stringify(getChangedData(item.changed_fields), null, 2) || '-'
             }}</pre>
           </td>
           <td class="px-6 py-4">{{ item.change_by }}</td>

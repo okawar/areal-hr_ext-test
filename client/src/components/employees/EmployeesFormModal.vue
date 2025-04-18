@@ -1,18 +1,18 @@
 <script setup>
-import { ref, watch } from 'vue'
-import employeesApi from '../../api/employees'
-import UiInput from '../ui/UiInput.vue'
-import UiSelect from '../ui/UiSelect.vue'
-import UiButton from '../ui/UiButton.vue'
+import { ref, watch } from 'vue';
+import employeesApi from '../../api/employees';
+import UiInput from '../ui/UiInput.vue';
+import UiSelect from '../ui/UiSelect.vue';
+import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
   employee: Object,
   departments: Array,
   positions: Array,
-  errors: Object
-})
+  errors: Object,
+});
 
-const emit = defineEmits(['close', 'save', 'error'])
+const emit = defineEmits(['close', 'save', 'error']);
 
 const form = ref({
   id: null,
@@ -31,16 +31,20 @@ const form = ref({
   building: '',
   apartment: '',
   department_id: null,
-  position_id: null
-})
+  position_id: null,
+});
 
-watch(() => props.employee, (emp) => {
-  if (emp) {
-    form.value = { ...emp }
-  } else {
-    resetForm()
-  }
-}, { immediate: true })
+watch(
+  () => props.employee,
+  (emp) => {
+    if (emp) {
+      form.value = { ...emp };
+    } else {
+      resetForm();
+    }
+  },
+  { immediate: true }
+);
 
 const resetForm = () => {
   form.value = {
@@ -60,31 +64,42 @@ const resetForm = () => {
     building: '',
     apartment: '',
     department_id: null,
-    position_id: null
-  }
-}
+    position_id: null,
+  };
+};
+
+const isSubmitting = ref(false);
 
 const save = async () => {
-  const dataToSend = { ...form.value }
-  if (!dataToSend.id) delete dataToSend.id
+  if (isSubmitting.value) return;
+
+  isSubmitting.value = true;
+
+  const dataToSend = { ...form.value };
+  if (!dataToSend.id) delete dataToSend.id;
 
   try {
     if (form.value.id) {
-      await employeesApi.update(form.value.id, dataToSend)
+      await employeesApi.update(form.value.id, dataToSend);
     } else {
-      await employeesApi.create(dataToSend)
+      await employeesApi.create(dataToSend);
     }
-    emit('save')
+    emit('save');
   } catch (e) {
-    emit('error', e)
+    emit('error', e);
   }
-}
+};
 </script>
 
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" @click="emit('close')" />
-    <div class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 z-50 overflow-y-auto max-h-[90vh]">
+    <div
+      class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"
+      @click="emit('close')"
+    />
+    <div
+      class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 z-50 overflow-y-auto max-h-[90vh]"
+    >
       <h2 class="text-xl font-semibold text-black mb-4">
         {{ form.id ? 'Редактирование сотрудника' : 'Добавление сотрудника' }}
       </h2>
@@ -127,6 +142,8 @@ const save = async () => {
           label="Отдел"
           :options="departments"
           :error="errors.department_id"
+          option-label="name"
+          option-value="id"
         />
 
         <UiSelect
@@ -134,6 +151,8 @@ const save = async () => {
           label="Должность"
           :options="positions"
           :error="errors.position_id"
+          option-label="name"
+          option-value="id"
         />
 
         <div class="col-span-2 space-y-2">
@@ -166,36 +185,16 @@ const save = async () => {
         <div class="col-span-2 space-y-2">
           <label class="block text-sm font-medium text-gray-700">Адрес</label>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <UiInput
-              v-model="form.region"
-              placeholder="Регион"
-              :error="errors.region"
-            />
+            <UiInput v-model="form.region" placeholder="Регион" :error="errors.region" />
             <UiInput
               v-model="form.locality"
               placeholder="Город / населённый пункт"
               :error="errors.locality"
             />
-            <UiInput
-              v-model="form.street"
-              placeholder="Улица"
-              :error="errors.street"
-            />
-            <UiInput
-              v-model="form.house"
-              placeholder="Дом"
-              :error="errors.house"
-            />
-            <UiInput
-              v-model="form.building"
-              placeholder="Корпус"
-              :error="errors.building"
-            />
-            <UiInput
-              v-model="form.apartment"
-              placeholder="Квартира"
-              :error="errors.apartment"
-            />
+            <UiInput v-model="form.street" placeholder="Улица" :error="errors.street" />
+            <UiInput v-model="form.house" placeholder="Дом" :error="errors.house" />
+            <UiInput v-model="form.building" placeholder="Корпус" :error="errors.building" />
+            <UiInput v-model="form.apartment" placeholder="Квартира" :error="errors.apartment" />
           </div>
         </div>
       </div>

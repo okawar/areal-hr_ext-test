@@ -1,13 +1,19 @@
-const express = require('express')
+const express = require('express');
 
-const {getChangeHistory, getChangeHistoryById, createChangeHistory, updateChangeHistory, deleteChangeHistory} = require('../controllers/changeHistoryController')
+const {
+  getChangeHistory,
+  getChangeHistoryById,
+  createChangeHistory,
+  updateChangeHistory,
+  deleteChangeHistory,
+} = require('../controllers/changeHistoryController');
 
-const router = express.Router()
+const router = express.Router();
 
-router.get("/", getChangeHistory)
-router.get("/:id", getChangeHistoryById)
-router.post("/", createChangeHistory)
-router.put("/:id", updateChangeHistory)
-router.delete("/:id", deleteChangeHistory)
+router.get('/', getChangeHistory);
+router.get('/:id', getChangeHistoryById);
+router.post('/', createChangeHistory);
+router.put('/:id', updateChangeHistory);
+router.delete('/:id', deleteChangeHistory);
 
 module.exports = router;

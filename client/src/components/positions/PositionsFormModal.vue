@@ -1,53 +1,70 @@
 <script setup>
-import { ref, watch } from 'vue'
-import positionsApi from '../../api/positions'
-import UiInput from '../ui/UiInput.vue'
-import UiButton from '../ui/UiButton.vue'
+import { ref, watch } from 'vue';
+import positionsApi from '../../api/positions';
+import UiInput from '../ui/UiInput.vue';
+import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
   position: Object,
-  errors: Object
-})
+  errors: Object,
+});
 
-const emit = defineEmits(['close', 'save', 'error'])
+const emit = defineEmits(['close', 'save', 'error']);
 
 const form = ref({
   id: null,
-  name: ''
-})
+  name: '',
+});
 
-watch(() => props.position, (position) => {
-  if (position) {
-    form.value = { ...position }
-  } else {
-    resetForm()
-  }
-}, { immediate: true })
+watch(
+  () => props.position,
+  (position) => {
+    if (position) {
+      form.value = { ...position };
+    } else {
+      resetForm();
+    }
+  },
+  { immediate: true }
+);
 
 const resetForm = () => {
   form.value = {
     id: null,
-    name: ''
-  }
-}
+    name: '',
+  };
+};
+
+const isSubmitting = ref(false);
 
 const save = async () => {
+  if (isSubmitting.value) return;
+
+  isSubmitting.value = true;
   try {
+    const payload = {
+      name: form.value.name,
+    };
+
     if (form.value.id) {
-      await positionsApi.update(form.value.id, form.value)
+      await positionsApi.update(form.value.id, payload);
     } else {
-      await positionsApi.create(form.value)
+      await positionsApi.create(payload);
     }
-    emit('save')
+
+    emit('save');
   } catch (e) {
-    emit('error', e)
+    emit('error', e);
   }
-}
+};
 </script>
 
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" @click="emit('close')" />
+    <div
+      class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"
+      @click="emit('close')"
+    />
     <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50">
       <h2 class="text-xl font-semibold text-black mb-4">
         {{ form.id ? 'Редактирование должности' : 'Добавление должности' }}

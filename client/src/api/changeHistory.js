@@ -1,7 +1,7 @@
-import apiClient from './index'
+import apiClient from './index';
 
 export default {
   getAll() {
-    return apiClient.get('/api/changeHistory')
-  }
-}
+    return apiClient.get('/api/changeHistory');
+  },
+};

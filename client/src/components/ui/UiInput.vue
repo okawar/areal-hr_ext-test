@@ -26,8 +26,8 @@ defineProps({
   },
   modelValue: [String, Number],
   placeholder: String,
-  error: String
-})
+  error: String,
+});
 
-defineEmits(['update:modelValue'])
+defineEmits(['update:modelValue']);
 </script>

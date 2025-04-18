@@ -1,16 +1,16 @@
-import apiClient from './index'
+import apiClient from './index';
 
 export default {
   fetchAll() {
-    return apiClient.get('/api/hrOp')
+    return apiClient.get('/api/hrOp');
   },
   create(data) {
-    return apiClient.post('/api/hrOp', data)
+    return apiClient.post('/api/hrOp', data);
   },
   update(id, data) {
-    return apiClient.put(`/api/hrOp/${id}`, data)
+    return apiClient.put(`/api/hrOp/${id}`, data);
   },
   delete(id) {
-    return apiClient.delete(`/api/hrOp/${id}`)
-  }
-}
+    return apiClient.delete(`/api/hrOp/${id}`);
+  },
+};
