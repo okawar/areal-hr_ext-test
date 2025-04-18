@@ -7,6 +7,7 @@ import EmployeesView from './components/employees/EmployeesView.vue';
 // import FilesView from './components/files/FilesView.vue';
 import HrOperationsView from './components/hrOperations/HrOperationsView.vue';
 import ChangeHistoryView from './components/changeHistory/ChangeHistoryView.vue';
+import UsersView from './components/users/UsersView.vue';
 
 const tabs = [
   {
@@ -29,7 +30,6 @@ const tabs = [
     component: EmployeesView,
     color: 'bg-amber-100 text-amber-700 hover:bg-amber-200',
   },
-  // { name: 'Файлы', component: FilesView, color: 'bg-blue-100 text-blue-700 hover:bg-blue-200' },
   {
     name: 'Операции',
     component: HrOperationsView,
@@ -39,6 +39,11 @@ const tabs = [
     name: 'История изменений',
     component: ChangeHistoryView,
     color: 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+  },
+  {
+    name: 'Пользователи',
+    component: UsersView,
+    color: 'bg-pink-100 text-pink-700 hover:bg-pink-200',
   },
 ];
 

@@ -19,12 +19,16 @@ const actionTypes = ['Прием на работу', 'Увольнение', 'И
 
 const actionTypesMap = {
   'Прием на работу': 'hire',
-  Увольнение: 'dismissal',
+  'Увольнение': 'dismissal',
   'Изменение зарплаты': 'change_salary',
   'Изменение отдела': 'change_department',
 };
 
-const form = ref({
+const reverseActionTypesMap = Object.fromEntries(
+  Object.entries(actionTypesMap).map(([k, v]) => [v, k])
+);
+
+const defaultForm = () => ({
   id: null,
   employee_id: null,
   department_id: null,
@@ -33,6 +37,8 @@ const form = ref({
   salary: null,
   operation_date: new Date().toISOString().split('T')[0],
 });
+
+const form = ref(defaultForm());
 
 const requiredFields = computed(() => {
   const fields = {
@@ -61,17 +67,19 @@ const validateForm = () => {
   const errors = {};
   let isValid = true;
 
-  Object.entries(requiredFields.value).forEach(([field, isRequired]) => {
-    if (isRequired && !form.value[field]) {
+  for (const [field, required] of Object.entries(requiredFields.value)) {
+    if (required && !form.value[field]) {
       errors[field] = 'Это поле обязательно для заполнения';
       isValid = false;
     }
-  });
+  }
 
   if (!isValid) {
     emit('error', {
       response: {
-        data: { details: Object.entries(errors).map(([path, message]) => ({ path, message })) },
+        data: {
+          details: Object.entries(errors).map(([path, message]) => ({ path, message })),
+        },
       },
     });
   }
@@ -81,20 +89,20 @@ const validateForm = () => {
 
 const isSubmitting = ref(false);
 
+const toNullableNumber = (val) => {
+  const num = Number(val);
+  return !isNaN(num) && val !== '' ? num : null;
+};
+
 const save = async () => {
   if (isSubmitting.value) return;
+  if (!validateForm()) return;
 
   isSubmitting.value = true;
 
-  if (!validateForm()) return;
-
-  const toNullableNumber = (val) => {
-    return val !== null && val !== '' ? Number(val) : null;
-  };
-
   const dataToSend = {
     employee_id: Number(form.value.employee_id),
-    action_type: actionTypesMap[form.value.action_type] || form.value.action_type,
+    action_type: actionTypesMap[form.value.action_type],
     operation_date: form.value.operation_date,
     department_id: toNullableNumber(form.value.department_id),
     position_id: toNullableNumber(form.value.position_id),
@@ -110,6 +118,8 @@ const save = async () => {
     emit('save');
   } catch (e) {
     emit('error', e);
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
@@ -117,22 +127,18 @@ watch(
   () => props.operation,
   (operation) => {
     if (operation) {
-      form.value = { ...operation };
-    } else {
       form.value = {
-        id: null,
-        employee_id: null,
-        department_id: null,
-        position_id: null,
-        action_type: '',
-        salary: null,
-        operation_date: new Date().toISOString().split('T')[0],
+        ...operation,
+        action_type: reverseActionTypesMap[operation.action_type] || '',
       };
+    } else {
+      form.value = defaultForm();
     }
   },
   { immediate: true }
 );
 </script>
+
 
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
