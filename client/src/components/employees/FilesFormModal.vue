@@ -36,29 +36,37 @@ const handleFileUpload = (event) => {
   }
 };
 
+const toNullableNumber = (val) => {
+  const num = Number(val);
+  return !isNaN(num) && val !== '' ? num : null;
+};
+
+
 const isSubmitting = ref(false);
 
 const save = async () => {
   if (isSubmitting.value) return;
-
   isSubmitting.value = true;
+
   try {
     const formData = new FormData();
-    formData.append('employee_id', form.value.employee_id);
-    formData.append('comment', form.value.comment);
 
     if (form.value.id) {
-      formData.append('file_name', form.value.file_name);
-      formData.append('file_path', form.value.file_path);
+      formData.append('id', String(Number(form.value.id))); 
+    }
 
+    formData.append('employee_id', form.value.employee_id);
+    formData.append('comment', form.value.comment);
+    formData.append('file_name', form.value.file_name);
+    formData.append('file_path', form.value.file_path);
+
+    if (form.value.id) {
       await filesApi.update(form.value.id, formData);
     } else {
       if (!form.value.file) {
         throw new Error('Файл обязателен для загрузки');
       }
-
       formData.append('file', form.value.file);
-
       await filesApi.create(formData);
     }
 
@@ -66,8 +74,14 @@ const save = async () => {
   } catch (error) {
     console.error('Ошибка при сохранении:', error);
     emit('error', error);
+  } finally {
+    isSubmitting.value = false;
   }
 };
+
+
+
+
 
 watch(
   () => props.file,
@@ -99,7 +113,7 @@ watch(
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
     <div
-      class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"
+      class="fixed inset-0 bg-black-100 bg-opacity-40 backdrop-blur-sm transition-opacity"
       @click="emit('close')"
     />
     <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50">
@@ -155,6 +169,7 @@ watch(
           <p v-if="errors.file_name" class="mt-1 text-sm text-red-600">{{ errors.file_name }}</p>
           <p v-if="errors.file_path" class="mt-1 text-sm text-red-600">{{ errors.file_path }}</p>
         </div>
+
 
         <UiTextarea
           id="comment"

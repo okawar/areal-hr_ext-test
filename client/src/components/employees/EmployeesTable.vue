@@ -67,6 +67,12 @@ const getEmployeeFiles = (employeeId) => {
             </th>
             <th
               scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Зарплата
+            </th>
+            <th
+              scope="col"
               class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Действия
@@ -91,6 +97,9 @@ const getEmployeeFiles = (employeeId) => {
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
                 {{ emp.passport_series }} {{ emp.passport_number }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {{ emp.salary ? emp.salary.toFixed(2) : '—' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex justify-end space-x-2">

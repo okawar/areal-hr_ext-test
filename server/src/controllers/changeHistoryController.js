@@ -248,49 +248,6 @@ const deleteChangeHistory = async (req, res) => {
   }
 };
 
-// const logChange = async (objectType, objectId, changedFields, userId = null) => {
-//   const client = await pool.connect();
-//   try {
-//     await client.query('BEGIN');
-
-//     const { error, value } = Joi.object({
-//       object_type: Joi.string()
-//         .valid('organization', 'department', 'position', 'employee', 'hr_operations')
-//         .required(),
-//       object_id: Joi.number().integer().positive().required(),
-//       changed_fields: Joi.object().required(),
-//     }).validate({
-//       object_type: objectType,
-//       object_id: objectId,
-//       changed_fields: changedFields,
-//     });
-
-//     if (error) {
-//       console.error('Validation error when logging changes:', error);
-//       return null;
-//     }
-
-//     const changeBy = userId || 1;
-
-//     const result = await client.query(
-//       `INSERT INTO change_history
-//         (change_time, change_by, object_type, object_id, changed_fields, created_at)
-//        VALUES (NOW(), $1, $2, $3, $4, NOW())
-//        RETURNING *`,
-//       [changeBy, objectType, objectId, changedFields]
-//     );
-
-//     await client.query('COMMIT');
-//     return result.rows[0];
-//   } catch (err) {
-//     await client.query('ROLLBACK');
-//     console.error('Error logging changes:', err);
-//     return null;
-//   } finally {
-//     client.release();
-//   }
-// };
-
 module.exports = {
   getChangeHistory,
   getChangeHistoryById,
@@ -298,5 +255,4 @@ module.exports = {
   createChangeHistory,
   updateChangeHistory,
   deleteChangeHistory,
-  // logChange,
 };

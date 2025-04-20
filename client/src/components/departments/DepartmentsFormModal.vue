@@ -109,7 +109,7 @@ const save = async () => {
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
     <div
-      class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"
+      class="fixed inset-0 bg-black-100 bg-opacity-40 backdrop-blur-sm transition-opacity"
       @click="emit('close')"
     />
     <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50">

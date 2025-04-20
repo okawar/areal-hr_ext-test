@@ -8,30 +8,52 @@ const getDepts = async (req, res) => {
     const result = await pool.query('SELECT * FROM departments WHERE deleted_at IS NULL');
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching departments:', err);
+    res.status(500).json({
+      error: 'Ошибка при получении отделов',
+      details: err.message,
+    });
   }
 };
 
 const getDeptById = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({
+      error: 'Неверный ID отдела',
+      details: error.details[0].message,
+    });
+  }
 
   try {
     const result = await pool.query(
       'SELECT * FROM departments WHERE id = $1 AND deleted_at IS NULL',
       [req.params.id]
     );
-    if (!result.rows.length) return res.status(404).json({ error: 'Отдел не найден' });
+    if (!result.rows.length) {
+      return res.status(404).json({
+        error: 'Отдел не найден',
+      });
+    }
 
     res.json(result.rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching department by ID:', err);
+    res.status(500).json({
+      error: 'Ошибка при получении отдела',
+      details: err.message,
+    });
   }
 };
 
 const createDept = async (req, res) => {
   const { error, value } = deptSchema.validate(req.body);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({
+      error: 'Неверные данные отдела',
+      details: error.details[0].message,
+    });
+  }
 
   const client = await pool.connect();
   try {
@@ -47,10 +69,14 @@ const createDept = async (req, res) => {
     await logChanges('department', createdDept.id, null, createdDept, 'create', req.user?.id || 1);
 
     await client.query('COMMIT');
-    res.json(createdDept);
+    res.status(201).json(createdDept);
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error creating department:', err);
+    res.status(500).json({
+      error: 'Ошибка при создании отдела',
+      details: err.message,
+    });
   } finally {
     client.release();
   }
@@ -58,11 +84,21 @@ const createDept = async (req, res) => {
 
 const updateDept = async (req, res) => {
   const { error: idError } = idSchema.validate(req.params);
-  if (idError) return res.status(400).json({ error: idError.details[0].message });
+  if (idError) {
+    return res.status(400).json({
+      error: 'Неверный ID отдела',
+      details: idError.details[0].message,
+    });
+  }
 
-  const { id, is_deleted, created_at, updated_at, deleted_at, ...data } = req.body;
+  const { id, created_at, updated_at, deleted_at, ...data } = req.body;
   const { error, value } = deptSchema.validate(data);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({
+      error: 'Неверные данные отдела',
+      details: error.details[0].message,
+    });
+  }
 
   const client = await pool.connect();
   try {
@@ -74,7 +110,9 @@ const updateDept = async (req, res) => {
     );
     if (!currentResult.rowCount) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'Отдел не найден' });
+      return res.status(404).json({
+        error: 'Отдел не найден',
+      });
     }
 
     const currentDept = currentResult.rows[0];
@@ -99,7 +137,11 @@ const updateDept = async (req, res) => {
     res.json(updatedDept);
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error updating department:', err);
+    res.status(500).json({
+      error: 'Ошибка при обновлении отдела',
+      details: err.message,
+    });
   } finally {
     client.release();
   }
@@ -107,22 +149,30 @@ const updateDept = async (req, res) => {
 
 const deleteDept = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({
+      error: 'Неверный ID отдела',
+      details: error.details[0].message,
+    });
+  }
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    const currentResult = await client.query(
+    const result = await client.query(
       'SELECT * FROM departments WHERE id = $1 AND deleted_at IS NULL',
       [req.params.id]
     );
-    if (!currentResult.rowCount) {
+    if (!result.rowCount) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'Отдел не найден' });
+      return res.status(404).json({
+        error: 'Отдел не найден',
+        details: error.details[0].message,
+      });
     }
 
-    const currentDept = currentResult.rows[0];
+    const currentDept = result.rows[0];
 
     await client.query('UPDATE departments SET deleted_at = NOW() WHERE id = $1 RETURNING *', [
       req.params.id,
@@ -131,13 +181,25 @@ const deleteDept = async (req, res) => {
     await logChanges('department', req.params.id, currentDept, null, 'delete', req.user?.id || 1);
 
     await client.query('COMMIT');
-    res.json({ message: 'Отдел удален' });
+    res.json({
+      message: 'Отдел удален',
+    });
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error deleting department:', err);
+    res.status(500).json({
+      error: 'Ошибка при удалении отдела',
+      details: err.message,
+    });
   } finally {
     client.release();
   }
 };
 
-module.exports = { getDepts, getDeptById, createDept, updateDept, deleteDept };
+module.exports = {
+  getDepts,
+  getDeptById,
+  createDept,
+  updateDept,
+  deleteDept,
+};

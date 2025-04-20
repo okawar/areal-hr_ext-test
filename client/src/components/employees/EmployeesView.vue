@@ -116,16 +116,20 @@ const handleFileError = (error) => {
     if (error.response.data.error) {
       fileErrors.value = { general: error.response.data.error };
     }
-    if (error.response.data.details) {
+    if (Array.isArray(error.response.data.details)) {
       fileErrors.value = error.response.data.details.reduce((acc, item) => {
         acc[item.path] = item.message;
         return acc;
       }, {});
+    } else {
+      console.log('Details is not an array:', error.response.data.details);
+      fileErrors.value = { general: 'Неизвестная ошибка в details' };
     }
   } else {
     fileErrors.value = { general: 'Ошибка соединения с сервером' };
   }
 };
+
 
 const filteredEmployees = computed(() => {
   return employees.value.filter((emp) =>

@@ -2,7 +2,6 @@ const pool = require('../database/database');
 const { idSchema } = require('../validation/id.schema');
 const { userSchema } = require('../validation/user.schema');
 const argon2 = require('argon2');
-// const { logChanges } = require('../utils/historyLogger');
 
 const getUsers = async (req, res) => {
   try {
@@ -11,13 +10,22 @@ const getUsers = async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching users:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при получении пользователей', 
+      details: err.message 
+    });
   }
 };
 
 const getUserById = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Неверный ID пользователя', 
+      details: error.details[0].message 
+    });
+  }
 
   try {
     const result = await pool.query(
@@ -25,17 +33,28 @@ const getUserById = async (req, res) => {
       [req.params.id]
     );
 
-    if (!result.rows.length) return res.status(404).json({ error: 'Пользователь не найден' });
+    if (!result.rows.length) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
 
     res.json(result.rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching user by ID:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при получении пользователя', 
+      details: err.message 
+    });
   }
 };
 
 const createUser = async (req, res) => {
   const { error, value } = userSchema.validate(req.body, { context: { isUpdate: false } });
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Неверные данные пользователя', 
+      details: error.details[0].message 
+    });
+  }
 
   const client = await pool.connect();
   try {
@@ -62,14 +81,15 @@ const createUser = async (req, res) => {
 
     const createdUser = result.rows[0];
 
-    // const userForLog = { ...createdUser };
-    // await logChanges('user', createdUser.id, null, userForLog, 'create', 1);
-
     await client.query('COMMIT');
     res.json(createdUser);
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error creating user:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при создании пользователя', 
+      details: err.message 
+    });
   } finally {
     client.release();
   }
@@ -77,38 +97,32 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { error: idError } = idSchema.validate(req.params);
-  if (idError) return res.status(400).json({ error: idError.details[0].message });
+  if (idError) {
+    return res.status(400).json({ 
+      error: 'Неверный ID пользователя', 
+      details: idError.details[0].message 
+    });
+  }
 
   const { id, created_at, updated_at, deleted_at, password_hash, ...data } = req.body;
   const { error, value } = userSchema.validate(data, { context: { isUpdate: true } });
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Неверные данные пользователя', 
+      details: error.details[0].message 
+    });
+  }
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-
-    const currentResult = await client.query(
-      'SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL',
-      [req.params.id]
+    const existingUser = await client.query(
+      'SELECT id FROM users WHERE login = $1 AND deleted_at IS NULL AND id != $2',
+      [value.login, req.params.id]
     );
-
-    if (!currentResult.rowCount) {
+    if (existingUser.rows.length) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'Пользователь не найден' });
-    }
-
-    const currentUser = currentResult.rows[0];
-
-    if (value.login !== currentUser.login) {
-      const existingUser = await client.query(
-        'SELECT id FROM users WHERE login = $1 AND id != $2 AND deleted_at IS NULL',
-        [value.login, req.params.id]
-      );
-
-      if (existingUser.rows.length) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ error: 'Пользователь с таким логином уже существует' });
-      }
+      return res.status(400).json({ error: 'Пользователь с таким логином уже существует' });
     }
 
     let updateQuery;
@@ -157,17 +171,18 @@ const updateUser = async (req, res) => {
       ];
     }
 
-    const updateResult = await client.query(updateQuery, params);
-    const updatedUser = updateResult.rows[0];
-
-    const userForLog = { ...updatedUser };
-    // await logChanges('user', req.params.id, { ...currentUser }, userForLog, 'update', 1);
+    const result = await client.query(updateQuery, params);
+    const updatedUser = result.rows[0];
 
     await client.query('COMMIT');
     res.json(updatedUser);
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error updating user:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при обновлении пользователя', 
+      details: err.message 
+    });
   } finally {
     client.release();
   }
@@ -175,38 +190,46 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Неверный ID пользователя', 
+      details: error.details[0].message 
+    });
+  }
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-
-    const currentResult = await client.query(
-      'SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL',
+    
+    const result = await client.query(
+      'SELECT id FROM users WHERE id = $1 AND deleted_at IS NULL',
       [req.params.id]
     );
 
-    if (!currentResult.rowCount) {
-      await client.query('ROLLBACK');
+    if (!result.rows.length) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
 
-    const currentUser = currentResult.rows[0];
-
     await client.query('UPDATE users SET deleted_at = NOW() WHERE id = $1', [req.params.id]);
-
-    const userForLog = { ...currentUser };
-    delete userForLog.password_hash;
-    // await logChanges('user', req.params.id, userForLog, null, 'delete', 1);
 
     await client.query('COMMIT');
     res.json({ message: 'Пользователь удален' });
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error deleting user:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при удалении пользователя', 
+      details: err.message 
+    });
   } finally {
     client.release();
   }
 };
 
-module.exports = { getUsers, getUserById, createUser, updateUser, deleteUser };
+module.exports = { 
+  getUsers, 
+  getUserById, 
+  createUser, 
+  updateUser, 
+  deleteUser 
+};

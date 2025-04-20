@@ -16,13 +16,22 @@ const getEmp = async (req, res) => {
     `);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching employees:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при получении сотрудников', 
+      details: err.message 
+    });
   }
 };
 
 const getEmpById = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Неверный ID сотрудника', 
+      details: error.details[0].message 
+    });
+  }
 
   try {
     const result = await pool.query(
@@ -37,16 +46,27 @@ const getEmpById = async (req, res) => {
       `,
       [req.params.id]
     );
-    if (!result.rows.length) return res.status(404).json({ error: 'Сотрудник не найден' });
+    if (!result.rows.length) {
+      return res.status(404).json({ error: 'Сотрудник не найден' });
+    }
     res.json(result.rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching employee by ID:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при получении сотрудника', 
+      details: err.message 
+    });
   }
 };
 
 const createEmp = async (req, res) => {
   const { error, value } = EmpSchema.validate(req.body);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Неверные данные сотрудника', 
+      details: error.details[0].message 
+    });
+  }
 
   const client = await pool.connect();
   try {
@@ -93,7 +113,11 @@ const createEmp = async (req, res) => {
     res.json(createdEmp);
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error creating employee:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при создании сотрудника', 
+      details: err.message 
+    });
   } finally {
     client.release();
   }
@@ -101,11 +125,21 @@ const createEmp = async (req, res) => {
 
 const updateEmp = async (req, res) => {
   const { error: idError } = idSchema.validate(req.params);
-  if (idError) return res.status(400).json({ error: idError.details[0].message });
+  if (idError) {
+    return res.status(400).json({ 
+      error: 'Неверный ID сотрудника', 
+      details: idError.details[0].message 
+    });
+  }
 
   const { id, created_at, updated_at, deleted_at, ...data } = req.body;
   const { error, value } = EmpSchema.validate(data);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Неверные данные сотрудника', 
+      details: error.details[0].message 
+    });
+  }
 
   const client = await pool.connect();
   try {
@@ -167,7 +201,11 @@ const updateEmp = async (req, res) => {
     res.json(updatedEmp);
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error updating employee:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при обновлении сотрудника', 
+      details: err.message 
+    });
   } finally {
     client.release();
   }
@@ -175,7 +213,12 @@ const updateEmp = async (req, res) => {
 
 const deleteEmp = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (error) {
+    return res.status(400).json({ 
+      error: 'Неверный ID сотрудника', 
+      details: error.details[0].message 
+    });
+  }
 
   const client = await pool.connect();
   try {
@@ -192,7 +235,7 @@ const deleteEmp = async (req, res) => {
     }
     const currentEmp = currentResult.rows[0];
 
-    const result = await client.query(
+    await client.query(
       'UPDATE employees SET deleted_at = NOW() WHERE id = $1 RETURNING *',
       [req.params.id]
     );
@@ -203,10 +246,20 @@ const deleteEmp = async (req, res) => {
     res.json({ message: 'Сотрудник удален' });
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: err.message });
+    console.error('Error deleting employee:', err);
+    res.status(500).json({ 
+      error: 'Ошибка при удалении сотрудника', 
+      details: err.message 
+    });
   } finally {
     client.release();
   }
 };
 
-module.exports = { getEmp, getEmpById, createEmp, updateEmp, deleteEmp };
+module.exports = { 
+  getEmp, 
+  getEmpById, 
+  createEmp, 
+  updateEmp, 
+  deleteEmp 
+};

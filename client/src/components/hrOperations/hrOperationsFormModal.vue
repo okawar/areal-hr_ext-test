@@ -21,12 +21,29 @@ const actionTypesMap = {
   'Прием на работу': 'hire',
   'Увольнение': 'dismissal',
   'Изменение зарплаты': 'change_salary',
-  'Изменение отдела': 'change_department',
+  'Изменение отдела': 'department_change',
 };
+
+const actionTypeOptions = computed(() => {
+  return actionTypes.map(type => ({
+    id: type,
+    name: type
+  }));
+});
 
 const reverseActionTypesMap = Object.fromEntries(
   Object.entries(actionTypesMap).map(([k, v]) => [v, k])
 );
+
+const employeeFullName = (employee) => {
+  if (!employee) return '';
+  
+  let name = `${employee.last_name} ${employee.first_name}`;
+  if (employee.middle_name) {
+    name += ` ${employee.middle_name}`;
+  }
+  return name;
+};
 
 const defaultForm = () => ({
   id: null,
@@ -104,10 +121,20 @@ const save = async () => {
     employee_id: Number(form.value.employee_id),
     action_type: actionTypesMap[form.value.action_type],
     operation_date: form.value.operation_date,
-    department_id: toNullableNumber(form.value.department_id),
-    position_id: toNullableNumber(form.value.position_id),
-    salary: toNullableNumber(form.value.salary),
   };
+  
+  if (['Прием на работу', 'Изменение отдела'].includes(form.value.action_type)) {
+    dataToSend.department_id = toNullableNumber(form.value.department_id);
+    dataToSend.position_id = toNullableNumber(form.value.position_id);
+  }
+  
+  if (['Прием на работу'].includes(form.value.action_type)) {
+    dataToSend.position_id = toNullableNumber(form.value.position_id);
+  }
+  
+  if (['Прием на работу', 'Изменение зарплаты'].includes(form.value.action_type)) {
+    dataToSend.salary = toNullableNumber(form.value.salary);
+  }
 
   try {
     if (form.value.id) {
@@ -143,7 +170,7 @@ watch(
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
     <div
-      class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"
+      class="fixed inset-0 bg-black-100 bg-opacity-40 backdrop-blur-sm transition-opacity"
       @click="emit('close')"
     />
     <div
@@ -166,15 +193,24 @@ watch(
           option-value="id"
           :error="errors && errors.employee_id"
         >
-          <template #option="{ option }"> {{ option.last_name }} {{ option.first_name }} </template>
+        <template #option="{ option }">
+        {{ employeeFullName(option) }}
+      </template>
+      <template #selected-option="{ option }">
+        {{ employeeFullName(option) }}
+      </template>
         </UiSelect>
 
         <UiSelect
           v-model="form.action_type"
           label="Тип операции *"
-          :options="actionTypes"
+          :options="actionTypeOptions"
+          option-label="name"
+          option-value="id"
           :error="errors && errors.action_type"
-        />
+        >
+      </UiSelect>
+
 
         <UiSelect
           v-if="['Прием на работу', 'Изменение отдела'].includes(form.action_type)"
@@ -184,7 +220,21 @@ watch(
           option-label="name"
           option-value="id"
           :error="errors && errors.department_id"
-        />
+        >
+       </UiSelect>
+
+        <UiSelect
+          v-if="['Прием на работу', 'Изменение отдела'].includes(form.action_type)"
+          v-model="form.position_id"
+          label="Должность *"
+          :options="positions || []"
+          option-label="name"
+          option-value="id"
+          :error="errors && errors.position_id"
+        >
+       </UiSelect>
+        
+        
 
         <UiSelect
           v-if="['Прием на работу'].includes(form.action_type)"
@@ -194,7 +244,8 @@ watch(
           option-label="name"
           option-value="id"
           :error="errors && errors.position_id"
-        />
+        >
+        </UiSelect>
 
         <UiInput
           v-if="['Прием на работу', 'Изменение зарплаты'].includes(form.action_type)"

@@ -87,24 +87,6 @@ const handleDelete = async (id) => {
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Отдел
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Должность
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Зарплата
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
               Дата
             </th>
             <th
@@ -120,22 +102,13 @@ const handleDelete = async (id) => {
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
               {{ op.id }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
               {{ getEmployeeName(op.employee_id) }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
               {{ op.action_type }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ getDepartmentName(op.department_id) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ getPositionName(op.position_id) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatSalary(op.salary) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
               {{ formatDate(op.operation_date) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

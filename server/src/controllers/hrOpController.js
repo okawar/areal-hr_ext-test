@@ -79,7 +79,40 @@ const createOperation = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    const query = `
+    const employeeResult = await client.query(
+      'SELECT id FROM employees WHERE id = $1 AND deleted_at IS NULL',
+      [value.employee_id]
+    );
+    if (!employeeResult.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        error: 'Сотрудник не найден',
+      });
+    }
+
+    const departmentResult = await client.query(
+      'SELECT id FROM departments WHERE id = $1 AND deleted_at IS NULL',
+      [value.department_id]
+    );
+    if (value.department_id && !departmentResult.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        error: 'Отдел не найден',
+      });
+    }
+
+    const positionResult = await client.query(
+      'SELECT id FROM positions WHERE id = $1 AND deleted_at IS NULL',
+      [value.position_id]
+    );
+    if (value.position_id && !positionResult.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        error: 'Должность не найдена',
+      });
+    }
+
+    const insertQuery = `
       INSERT INTO hr_operations (
         employee_id, 
         department_id, 
@@ -92,8 +125,7 @@ const createOperation = async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
       RETURNING *
     `;
-
-    const result = await client.query(query, [
+    const result = await client.query(insertQuery, [
       value.employee_id,
       value.department_id || null,
       value.position_id || null,
@@ -103,6 +135,43 @@ const createOperation = async (req, res) => {
     ]);
 
     const createdOperation = result.rows[0];
+
+    await client.query(`
+      UPDATE employees SET 
+        department_id = $1,
+        position_id = $2,
+        salary = $3,
+        updated_at = NOW()
+      WHERE id = $4
+    `, [
+      value.department_id || null,
+      value.position_id || null,
+      value.salary || null,
+      value.employee_id,
+    ]);
+
+
+    await client.query(`
+      UPDATE employees SET 
+        department_id = $1,
+        position_id = $2,
+        salary = $3,
+        updated_at = NOW()
+      WHERE id = $4
+    `, [
+      value.department_id || null,
+      value.position_id || null,
+      value.salary || null,
+      value.employee_id,
+    ]);
+
+    if (value.action_type.toLowerCase() === 'dismissal') {
+      await client.query(`
+        UPDATE employees SET 
+          deleted_at = NOW()
+        WHERE id = $1
+      `, [value.employee_id]);
+    }
 
     await logChanges(
       'hr_operations',
@@ -151,14 +220,12 @@ const updateOperation = async (req, res) => {
     const currentResult = await client.query('SELECT * FROM hr_operations WHERE id = $1', [
       req.params.id,
     ]);
-
     if (!currentResult.rowCount) {
       await client.query('ROLLBACK');
       return res.status(404).json({
         error: 'Операция не найдена',
       });
     }
-
     const currentOperation = currentResult.rows[0];
 
     const updateQuery = `
@@ -173,7 +240,6 @@ const updateOperation = async (req, res) => {
       WHERE id = $7
       RETURNING *
     `;
-
     const result = await client.query(updateQuery, [
       value.employee_id,
       value.department_id || null,
@@ -185,6 +251,20 @@ const updateOperation = async (req, res) => {
     ]);
 
     const updatedOperation = result.rows[0];
+
+    await client.query(`
+      UPDATE employees SET 
+        department_id = $1,
+        position_id = $2,
+        salary = $3,
+        updated_at = NOW()
+      WHERE id = $4
+    `, [
+      value.department_id || null,
+      value.position_id || null,
+      value.salary || null,
+      value.employee_id,
+    ]);
 
     await logChanges(
       'hr_operations',
@@ -225,23 +305,20 @@ const deleteOperation = async (req, res) => {
     const currentResult = await client.query('SELECT * FROM hr_operations WHERE id = $1', [
       req.params.id,
     ]);
-
     if (!currentResult.rowCount) {
       await client.query('ROLLBACK');
       return res.status(404).json({
         error: 'Операция не найдена',
       });
     }
-
     const currentOperation = currentResult.rows[0];
 
-    const query = `
+    const deleteQuery = `
       DELETE FROM hr_operations 
       WHERE id = $1
       RETURNING *
     `;
-
-    const result = await client.query(query, [req.params.id]);
+    const result = await client.query(deleteQuery, [req.params.id]);
 
     await logChanges(
       'hr_operations',
