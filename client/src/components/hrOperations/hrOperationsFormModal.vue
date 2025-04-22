@@ -20,7 +20,7 @@ const actionTypes = ['Прием на работу', 'Увольнение', 'И
 const actionTypesMap = {
   'Прием на работу': 'hire',
   'Увольнение': 'dismissal',
-  'Изменение зарплаты': 'change_salary',
+  'Изменение зарплаты': 'salary_change',
   'Изменение отдела': 'department_change',
 };
 
@@ -234,9 +234,8 @@ watch(
         >
        </UiSelect>
         
-        
-
-        <UiSelect
+      
+        <!-- <UiSelect
           v-if="['Прием на работу'].includes(form.action_type)"
           v-model="form.position_id"
           label="Должность *"
@@ -245,7 +244,7 @@ watch(
           option-value="id"
           :error="errors && errors.position_id"
         >
-        </UiSelect>
+        </UiSelect> -->
 
         <UiInput
           v-if="['Прием на работу', 'Изменение зарплаты'].includes(form.action_type)"

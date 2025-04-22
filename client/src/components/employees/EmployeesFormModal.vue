@@ -47,6 +47,7 @@ const form = ref({
   position_id: null,
   salary: '', 
   file_name: '',
+  file_path: '',
   file: null, 
 });
 
@@ -54,6 +55,7 @@ const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
     form.value.file_name = file.name;
+    form.value.file_path = file.name;
     form.value.file = file;
   }
 };
@@ -87,24 +89,20 @@ const resetForm = () => {
     house: '',
     building: '',
     apartment: '',
-    department_id: null,
-    position_id: null,
-    salary: '',
-    file_name: '',
-    file: null,
   };
 };
 
 const isSubmitting = ref(false);
 
-const save = async () => {
+const errors = ref({})
+
+  const save = async () => {
   if (isSubmitting.value) return;
+
   isSubmitting.value = true;
-  
-  try {
-    if (form.value.id) {
-      // Обновление существующего сотрудника
-      const employeeData = {
+  errors.value = {};
+
+  const payloadData = {
         last_name: form.value.last_name,
         first_name: form.value.first_name,
         middle_name: form.value.middle_name || '',
@@ -119,72 +117,27 @@ const save = async () => {
         house: form.value.house,
         building: form.value.building || '',
         apartment: form.value.apartment || '',
-        department_id: Number(form.value.department_id),
-        position_id: Number(form.value.position_id),
-        salary: form.value.salary ? Number(form.value.salary) : null,
-      };
+  };
 
-      // Если файл был загружен, отправляем его отдельно
-      if (form.value.file instanceof File) {
-        const fileFormData = new FormData();
-        fileFormData.append('file', form.value.file);
-        fileFormData.append('employee_id', form.value.id);
-
-        await employeesApi.update(form.value.id, employeeData);
-        await filesApi.uploadForEmployee(form.value.id, fileFormData);
-      } else {
-        await employeesApi.update(form.value.id, employeeData);
-      }
+  try {
+    if (form.value.id) {
+      await employeesApi.update(payloadData);
     } else {
-      // Создание нового сотрудника
-      const formData = new FormData();
-      formData.append('last_name', form.value.last_name || '');
-      formData.append('first_name', form.value.first_name || '');
-      formData.append('birth_date', form.value.birth_date || '');
-      formData.append('passport_series', form.value.passport_series || '');
-      formData.append('passport_number', form.value.passport_number || '');
-      formData.append('passport_issue_date', form.value.passport_issue_date || '');
-      formData.append('passport_issued_by', form.value.passport_issued_by || '');
-      formData.append('region', form.value.region || '');
-      formData.append('locality', form.value.locality || '');
-      formData.append('street', form.value.street || '');
-      formData.append('house', form.value.house || '');
-      formData.append('department_id', form.value.department_id || '');
-      formData.append('position_id', form.value.position_id || '');
-      
-      if (form.value.middle_name) formData.append('middle_name', form.value.middle_name);
-      if (form.value.building) formData.append('building', form.value.building);
-      if (form.value.apartment) formData.append('apartment', form.value.apartment);
-      if (form.value.salary) formData.append('salary', Number(form.value.salary));
-      
-      if (form.value.file instanceof File) {
-        formData.append('file', form.value.file);
-      }
-
-      await employeesApi.create(formData);
+      await employeesApi.create(payloadData);
     }
-
     emit('save');
   } catch (e) {
-    console.error('Error saving employee:', e);
-
-    if (e.response && e.response.data) {
-      console.log('Server response details:', e.response.data);
-      emit('error', e);
+    if (e.response?.data?.errors) {
+      errors.value = e.response.data.errors;
+    } else if (e.response?.data?.error) {
+      errors.value.general = e.response.data.error;
     } else {
-      emit('error', {
-        response: {
-          data: {
-            error: 'Произошла ошибка при сохранении',
-            details: e.message || 'Неизвестная ошибка'
-          }
-        }
-      });
+      errors.value.general = 'Произошла ошибка при сохранении.';
     }
   } finally {
     isSubmitting.value = false;
   }
-};
+}; 
 </script>
 
 <template>
@@ -229,7 +182,7 @@ const save = async () => {
           label="Дата рождения"
           :error="errors.birth_date"
         />
-        <UiSelect
+        <!-- <UiSelect
           v-model="form.department_id"
           label="Отдел"
           :options="departments"
@@ -244,7 +197,7 @@ const save = async () => {
           :error="errors.position_id"
           option-label="name"
           option-value="id"
-        />
+        /> -->
         <div class="col-span-2 space-y-2">
           <label class="block text-sm font-medium text-gray-700">Паспортные данные</label>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -288,15 +241,15 @@ const save = async () => {
           </div>
         </div>
 
-        <UiInput
+        <!-- <UiInput
           v-model="form.salary"
           label="Зарплата"
           placeholder="Введите зарплату"
           type="number"
           :error="errors.salary"
-        />
+        /> -->
 
-        <div class="space-y-1">
+        <!-- <div class="space-y-1">
           <label class="block text-sm font-medium text-gray-700">Скан паспорта</label>
           <div class="mt-1 flex items-center">
             <label class="cursor-pointer">
@@ -326,7 +279,7 @@ const save = async () => {
             </span>
           </div>
           <p v-if="errors.file_name" class="mt-1 text-sm text-red-600">{{ errors.file_name }}</p>
-        </div>
+        </div> -->
       </div>
 
       <div class="mt-6 flex justify-end space-x-3">

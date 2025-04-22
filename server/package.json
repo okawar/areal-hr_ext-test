@@ -4,12 +4,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "migrate:create": "cd server && npx node-pg-migrate create",
-    "migrate:up": "cd server && npx node-pg-migrate up --config pg-migrate-config.js",
-    "migrate:down": "cd server && npx node-pg-migrate down --config pg-migrate-config.js",
+    "migrate:create": "npx node-pg-migrate create",
+    "migrate:up": "node pg-migrate-config.js up",
+    "migrate:down": "node pg-migrate-config.js down",
+    "migrate:reset": "node pg-migrate-config.js reset",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "seed": "node seeds/seedAll.js"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +28,9 @@
     "node-pg-migrate": "^7.9.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "pg": "^8.14.1"
+    "pg": "8.11.3",
+    "pg-connection-string": "^2.8.0",
+    "pg-pool": "3.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",

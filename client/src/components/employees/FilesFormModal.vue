@@ -32,15 +32,10 @@ const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
     form.value.file_name = file.name;
+    form.value.file_path = file.name;
     form.value.file = file;
   }
 };
-
-const toNullableNumber = (val) => {
-  const num = Number(val);
-  return !isNaN(num) && val !== '' ? num : null;
-};
-
 
 const isSubmitting = ref(false);
 
@@ -49,25 +44,13 @@ const save = async () => {
   isSubmitting.value = true;
 
   try {
-    const formData = new FormData();
-
     if (form.value.id) {
-      formData.append('id', String(Number(form.value.id))); 
-    }
-
-    formData.append('employee_id', form.value.employee_id);
-    formData.append('comment', form.value.comment);
-    formData.append('file_name', form.value.file_name);
-    formData.append('file_path', form.value.file_path);
-
-    if (form.value.id) {
-      await filesApi.update(form.value.id, formData);
+      await filesApi.update(form.value.id, form.value);
     } else {
       if (!form.value.file) {
         throw new Error('Файл обязателен для загрузки');
       }
-      formData.append('file', form.value.file);
-      await filesApi.create(formData);
+      await filesApi.create(form.value);
     }
 
     emit('save');
@@ -78,9 +61,6 @@ const save = async () => {
     isSubmitting.value = false;
   }
 };
-
-
-
 
 
 watch(
@@ -135,7 +115,6 @@ watch(
           :option-label="
             (employee) => `${employee.last_name} ${employee.first_name} ${employee.middle_name}`
           "
-          :error="errors.employee_id"
         />
         <div class="space-y-1">
           <label class="block text-sm font-medium text-gray-700">Файл</label>

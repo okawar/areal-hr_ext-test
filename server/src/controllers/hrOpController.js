@@ -3,6 +3,7 @@ const { operationSchema } = require('../validation/operation.schema');
 const { idSchema } = require('../validation/id.schema');
 const { logChanges } = require('../utils/historyLogger');
 
+
 const getOperations = async (req, res) => {
   try {
     const query = `
@@ -136,44 +137,36 @@ const createOperation = async (req, res) => {
 
     const createdOperation = result.rows[0];
 
-    await client.query(`
+    await client.query(
+      `
       UPDATE employees SET 
         department_id = $1,
         position_id = $2,
         salary = $3,
         updated_at = NOW()
       WHERE id = $4
-    `, [
-      value.department_id || null,
-      value.position_id || null,
-      value.salary || null,
-      value.employee_id,
-    ]);
-
-
-    await client.query(`
-      UPDATE employees SET 
-        department_id = $1,
-        position_id = $2,
-        salary = $3,
-        updated_at = NOW()
-      WHERE id = $4
-    `, [
-      value.department_id || null,
-      value.position_id || null,
-      value.salary || null,
-      value.employee_id,
-    ]);
+    `,
+      [
+        value.department_id || null,
+        value.position_id || null,
+        value.salary || null,
+        value.employee_id,
+      ]
+    );
 
     if (value.action_type.toLowerCase() === 'dismissal') {
-      await client.query(`
+      await client.query(
+        `
         UPDATE employees SET 
           deleted_at = NOW()
         WHERE id = $1
-      `, [value.employee_id]);
+      `,
+        [value.employee_id]
+      );
     }
 
     await logChanges(
+      client,
       'hr_operations',
       createdOperation.id,
       null,
@@ -252,21 +245,25 @@ const updateOperation = async (req, res) => {
 
     const updatedOperation = result.rows[0];
 
-    await client.query(`
+    await client.query(
+      `
       UPDATE employees SET 
         department_id = $1,
         position_id = $2,
         salary = $3,
         updated_at = NOW()
       WHERE id = $4
-    `, [
-      value.department_id || null,
-      value.position_id || null,
-      value.salary || null,
-      value.employee_id,
-    ]);
+    `,
+      [
+        value.department_id || null,
+        value.position_id || null,
+        value.salary || null,
+        value.employee_id,
+      ]
+    );
 
     await logChanges(
+      client,
       'hr_operations',
       req.params.id,
       currentOperation,
@@ -321,6 +318,7 @@ const deleteOperation = async (req, res) => {
     const result = await client.query(deleteQuery, [req.params.id]);
 
     await logChanges(
+      client,
       'hr_operations',
       req.params.id,
       currentOperation,

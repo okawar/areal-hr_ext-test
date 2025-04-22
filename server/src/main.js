@@ -29,28 +29,9 @@ const PORT = process.env.APP_PORT || 3000;
 const HOST = process.env.APP_URL;
 
 const startServer = async () => {
-  try {
-    if (process.env.RUN_MIGRATIONS === 'true') {
-      await pgmigrate.default({
-        databaseUrl: require('../pg-migrate-config').databaseUrl,
-        dir: require('../pg-migrate-config').dir,
-        migrationsTable: 'pgmigrations',
-        direction: 'up',
-        log: console.log,
-        noLock: true,
-      });
-      console.log('✅ Миграции выполнены');
-    } else {
-      console.log('⚠️ Пропуск выполнения миграций');
-    }
-
-    app.listen(PORT, () => {
-      console.log(`✅ Сервер работает на ${HOST}:${PORT}`);
-    });
-  } catch (err) {
-    console.error('❌ Ошибка при запуске миграций:', err);
-    process.exit(1);
-  }
+  app.listen(PORT, () => {
+    console.log(`✅ Сервер работает на ${HOST}:${PORT}`);
+  });
 };
 
 startServer();

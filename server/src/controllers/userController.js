@@ -11,9 +11,9 @@ const getUsers = async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching users:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при получении пользователей', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при получении пользователей',
+      details: err.message,
     });
   }
 };
@@ -21,9 +21,9 @@ const getUsers = async (req, res) => {
 const getUserById = async (req, res) => {
   const { error } = idSchema.validate(req.params);
   if (error) {
-    return res.status(400).json({ 
-      error: 'Неверный ID пользователя', 
-      details: error.details[0].message 
+    return res.status(400).json({
+      error: 'Неверный ID пользователя',
+      details: error.details[0].message,
     });
   }
 
@@ -40,9 +40,9 @@ const getUserById = async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error fetching user by ID:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при получении пользователя', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при получении пользователя',
+      details: err.message,
     });
   }
 };
@@ -50,9 +50,9 @@ const getUserById = async (req, res) => {
 const createUser = async (req, res) => {
   const { error, value } = userSchema.validate(req.body, { context: { isUpdate: false } });
   if (error) {
-    return res.status(400).json({ 
-      error: 'Неверные данные пользователя', 
-      details: error.details[0].message 
+    return res.status(400).json({
+      error: 'Неверные данные пользователя',
+      details: error.details[0].message,
     });
   }
 
@@ -86,9 +86,9 @@ const createUser = async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error creating user:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при создании пользователя', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при создании пользователя',
+      details: err.message,
     });
   } finally {
     client.release();
@@ -98,18 +98,18 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   const { error: idError } = idSchema.validate(req.params);
   if (idError) {
-    return res.status(400).json({ 
-      error: 'Неверный ID пользователя', 
-      details: idError.details[0].message 
+    return res.status(400).json({
+      error: 'Неверный ID пользователя',
+      details: idError.details[0].message,
     });
   }
 
   const { id, created_at, updated_at, deleted_at, password_hash, ...data } = req.body;
   const { error, value } = userSchema.validate(data, { context: { isUpdate: true } });
   if (error) {
-    return res.status(400).json({ 
-      error: 'Неверные данные пользователя', 
-      details: error.details[0].message 
+    return res.status(400).json({
+      error: 'Неверные данные пользователя',
+      details: error.details[0].message,
     });
   }
 
@@ -179,9 +179,9 @@ const updateUser = async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error updating user:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при обновлении пользователя', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при обновлении пользователя',
+      details: err.message,
     });
   } finally {
     client.release();
@@ -191,20 +191,19 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   const { error } = idSchema.validate(req.params);
   if (error) {
-    return res.status(400).json({ 
-      error: 'Неверный ID пользователя', 
-      details: error.details[0].message 
+    return res.status(400).json({
+      error: 'Неверный ID пользователя',
+      details: error.details[0].message,
     });
   }
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    
-    const result = await client.query(
-      'SELECT id FROM users WHERE id = $1 AND deleted_at IS NULL',
-      [req.params.id]
-    );
+
+    const result = await client.query('SELECT id FROM users WHERE id = $1 AND deleted_at IS NULL', [
+      req.params.id,
+    ]);
 
     if (!result.rows.length) {
       return res.status(404).json({ error: 'Пользователь не найден' });
@@ -217,19 +216,19 @@ const deleteUser = async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error deleting user:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при удалении пользователя', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при удалении пользователя',
+      details: err.message,
     });
   } finally {
     client.release();
   }
 };
 
-module.exports = { 
-  getUsers, 
-  getUserById, 
-  createUser, 
-  updateUser, 
-  deleteUser 
+module.exports = {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
 };

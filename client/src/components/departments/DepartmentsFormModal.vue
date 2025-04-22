@@ -80,8 +80,8 @@ const save = async () => {
 
   const payloadData = {
     name: form.value.name,
-    organization_id: form.value.organization_id || null,
-    parent_id: form.value.parent_id || null,
+    organization_id: form.value.organization_id ? Number(form.value.organization_id) : null,
+    parent_id: form.value.parent_id ? Number(form.value.parent_id) : null,
     comment: form.value.comment || '',
   };
 

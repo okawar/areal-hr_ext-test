@@ -7,25 +7,19 @@ exports.shorthands = {
     updated_at: { type: 'timestamp', notNull: true, default: 'now()' },
     deleted_at: { type: 'timestamp' },
   },
-  is_deleted: {
-    type: 'boolean',
-    notNull: true,
-    default: false,
-  },
 };
 
 exports.up = (pgm) => {
   pgm.createTable('organizations', {
     id: 'id',
     name: { type: 'varchar(255)', notNull: true },
-    is_deleted: 'is_deleted',
+    comment: { type: 'text' },
     ...exports.shorthands.timestamps,
   });
 
-  pgm.createTable('postition', {
+  pgm.createTable('positions', {
     id: 'id',
     name: { type: 'varchar(255)', notNull: true },
-    is_deleted: 'is_deleted',
     ...exports.shorthands.timestamps,
   });
 
@@ -33,7 +27,7 @@ exports.up = (pgm) => {
     id: 'id',
     organization_id: {
       type: 'integer',
-      references: 'organization',
+      references: 'organizations',
       onDelete: 'CASCADE',
     },
     name: { type: 'varchar(255)', notNull: true },
@@ -43,7 +37,6 @@ exports.up = (pgm) => {
       onDelete: 'SET NULL',
     },
     comment: { type: 'text' },
-    is_deleted: 'is_deleted',
     ...exports.shorthands.timestamps,
   });
 
@@ -58,12 +51,11 @@ exports.up = (pgm) => {
     passport_issue_date: { type: 'date' },
     passport_issued_by: { type: 'varchar(255)' },
     region: { type: 'varchar(255)' },
-    locally: { type: 'varchar(255)' },
+    locality: { type: 'varchar(255)' },
     street: { type: 'varchar(255)' },
     house: { type: 'varchar(20)' },
     building: { type: 'varchar(20)' },
     apartment: { type: 'varchar(20)' },
-    is_deleted: 'is_deleted',
     department_id: {
       type: 'integer',
       references: 'departments',
@@ -71,9 +63,10 @@ exports.up = (pgm) => {
     },
     position_id: {
       type: 'integer',
-      references: 'postition',
+      references: 'positions',
       onDelete: 'SET NULL',
     },
+    salary: { type: 'numeric(10,2)' },
     ...exports.shorthands.timestamps,
   });
 
@@ -87,7 +80,6 @@ exports.up = (pgm) => {
       onDelete: 'CASCADE',
     },
     comment: { type: 'text' },
-    is_deleted: 'is_deleted',
     ...exports.shorthands.timestamps,
   });
 
@@ -99,7 +91,6 @@ exports.up = (pgm) => {
     login: { type: 'varchar(255)', notNull: true, unique: true },
     password_hash: { type: 'text', notNull: true },
     role: { type: 'varchar(50)', notNull: true },
-    is_deleted: 'is_deleted',
     ...exports.shorthands.timestamps,
   });
 
@@ -117,7 +108,7 @@ exports.up = (pgm) => {
     },
     position_id: {
       type: 'integer',
-      references: 'postition',
+      references: 'positions',
       onDelete: 'SET NULL',
     },
     action_type: {
@@ -141,7 +132,7 @@ exports.up = (pgm) => {
     object_type: {
       type: 'varchar(50)',
       notNull: true,
-      check: `object_type IN ('organization', 'department', 'position', 'employee')`,
+      check: `object_type IN ('organization', 'department', 'position', 'employee', 'hr_operations')`,
     },
     object_id: { type: 'integer', notNull: true },
     changed_fields: { type: 'jsonb', notNull: true },
@@ -156,6 +147,6 @@ exports.down = (pgm) => {
   pgm.dropTable('files');
   pgm.dropTable('employees');
   pgm.dropTable('departments');
-  pgm.dropTable('postition');
-  pgm.dropTable('organization');
+  pgm.dropTable('positions');
+  pgm.dropTable('organizations');
 };

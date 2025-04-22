@@ -17,9 +17,9 @@ const getEmp = async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching employees:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при получении сотрудников', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при получении сотрудников',
+      details: err.message,
     });
   }
 };
@@ -27,9 +27,9 @@ const getEmp = async (req, res) => {
 const getEmpById = async (req, res) => {
   const { error } = idSchema.validate(req.params);
   if (error) {
-    return res.status(400).json({ 
-      error: 'Неверный ID сотрудника', 
-      details: error.details[0].message 
+    return res.status(400).json({
+      error: 'Неверный ID сотрудника',
+      details: error.details[0].message,
     });
   }
 
@@ -52,9 +52,9 @@ const getEmpById = async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error fetching employee by ID:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при получении сотрудника', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при получении сотрудника',
+      details: err.message,
     });
   }
 };
@@ -62,9 +62,9 @@ const getEmpById = async (req, res) => {
 const createEmp = async (req, res) => {
   const { error, value } = EmpSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ 
-      error: 'Неверные данные сотрудника', 
-      details: error.details[0].message 
+    return res.status(400).json({
+      error: 'Неверные данные сотрудника',
+      details: error.details[0].message,
     });
   }
 
@@ -107,16 +107,24 @@ const createEmp = async (req, res) => {
 
     const createdEmp = result.rows[0];
 
-    await logChanges('employee', createdEmp.id, null, createdEmp, 'create', req.user?.id || 1);
+    await logChanges(
+      client,
+      'employee',
+      createdEmp.id,
+      null,
+      createdEmp,
+      'create',
+      req.user?.id || 1
+    );
 
     await client.query('COMMIT');
     res.json(createdEmp);
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error creating employee:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при создании сотрудника', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при создании сотрудника',
+      details: err.message,
     });
   } finally {
     client.release();
@@ -126,18 +134,18 @@ const createEmp = async (req, res) => {
 const updateEmp = async (req, res) => {
   const { error: idError } = idSchema.validate(req.params);
   if (idError) {
-    return res.status(400).json({ 
-      error: 'Неверный ID сотрудника', 
-      details: idError.details[0].message 
+    return res.status(400).json({
+      error: 'Неверный ID сотрудника',
+      details: idError.details[0].message,
     });
   }
 
   const { id, created_at, updated_at, deleted_at, ...data } = req.body;
   const { error, value } = EmpSchema.validate(data);
   if (error) {
-    return res.status(400).json({ 
-      error: 'Неверные данные сотрудника', 
-      details: error.details[0].message 
+    return res.status(400).json({
+      error: 'Неверные данные сотрудника',
+      details: error.details[0].message,
     });
   }
 
@@ -189,6 +197,7 @@ const updateEmp = async (req, res) => {
     const updatedEmp = result.rows[0];
 
     await logChanges(
+      client,
       'employee',
       req.params.id,
       currentEmp,
@@ -202,9 +211,9 @@ const updateEmp = async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error updating employee:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при обновлении сотрудника', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при обновлении сотрудника',
+      details: err.message,
     });
   } finally {
     client.release();
@@ -214,9 +223,9 @@ const updateEmp = async (req, res) => {
 const deleteEmp = async (req, res) => {
   const { error } = idSchema.validate(req.params);
   if (error) {
-    return res.status(400).json({ 
-      error: 'Неверный ID сотрудника', 
-      details: error.details[0].message 
+    return res.status(400).json({
+      error: 'Неверный ID сотрудника',
+      details: error.details[0].message,
     });
   }
 
@@ -235,31 +244,38 @@ const deleteEmp = async (req, res) => {
     }
     const currentEmp = currentResult.rows[0];
 
-    await client.query(
-      'UPDATE employees SET deleted_at = NOW() WHERE id = $1 RETURNING *',
-      [req.params.id]
-    );
+    await client.query('UPDATE employees SET deleted_at = NOW() WHERE id = $1 RETURNING *', [
+      req.params.id,
+    ]);
 
-    await logChanges('employee', req.params.id, currentEmp, null, 'delete', req.user?.id || 1);
+    await logChanges(
+      client,
+      'employee',
+      req.params.id,
+      currentEmp,
+      null,
+      'delete',
+      req.user?.id || 1
+    );
 
     await client.query('COMMIT');
     res.json({ message: 'Сотрудник удален' });
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error deleting employee:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при удалении сотрудника', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при удалении сотрудника',
+      details: err.message,
     });
   } finally {
     client.release();
   }
 };
 
-module.exports = { 
-  getEmp, 
-  getEmpById, 
-  createEmp, 
-  updateEmp, 
-  deleteEmp 
+module.exports = {
+  getEmp,
+  getEmpById,
+  createEmp,
+  updateEmp,
+  deleteEmp,
 };

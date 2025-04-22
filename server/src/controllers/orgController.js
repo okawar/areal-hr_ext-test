@@ -9,19 +9,20 @@ const getOrgs = async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching organizations:', err);
-    res.status(500).json({ 
-      error: 'Ошибка при получении организаций', 
-      details: err.message 
+    res.status(500).json({
+      error: 'Ошибка при получении организаций',
+      details: err.message,
     });
   }
 };
 
 const getOrgById = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error) return res.status(400).json({ 
-    error: 'Неверный ID организации',
-    details: error.details[0].message 
-  });
+  if (error)
+    return res.status(400).json({
+      error: 'Неверный ID организации',
+      details: error.details[0].message,
+    });
 
   try {
     const result = await pool.query(
@@ -35,17 +36,18 @@ const getOrgById = async (req, res) => {
     console.error('Error fetching organization by ID:', err);
     res.status(500).json({
       error: err.message,
-      details: "Ошибка при получении организации"
-     });
+      details: 'Ошибка при получении организации',
+    });
   }
 };
 
 const createOrg = async (req, res) => {
   const { error, value } = orgSchema.validate(req.body);
-  if (error) return res.status(400).json({ 
-    error: "Неверные данные организации", 
-    details: error.details[0].message 
-  });
+  if (error)
+    return res.status(400).json({
+      error: 'Неверные данные организации',
+      details: error.details[0].message,
+    });
 
   const client = await pool.connect();
   try {
@@ -58,16 +60,24 @@ const createOrg = async (req, res) => {
 
     const createdOrg = result.rows[0];
 
-    await logChanges('organization', createdOrg.id, null, createdOrg, 'create', req.user?.id || 1);
+    await logChanges(
+      client,
+      'organization',
+      createdOrg.id,
+      null,
+      createdOrg,
+      'create',
+      req.user?.id || 1
+    );
 
     await client.query('COMMIT');
     res.json(createdOrg);
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error creating organization:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: err.message,
-      details: "Ошибка при создании организации"
+      details: 'Ошибка при создании организации',
     });
   } finally {
     client.release();
@@ -76,18 +86,20 @@ const createOrg = async (req, res) => {
 
 const updateOrg = async (req, res) => {
   const { error: idError } = idSchema.validate(req.params);
-  if (idError) return res.status(400).json({ 
-    error: 'Неверный ID организации', 
-    details: idError.details[0].message 
-  });
+  if (idError)
+    return res.status(400).json({
+      error: 'Неверный ID организации',
+      details: idError.details[0].message,
+    });
 
   const { id, created_at, updated_at, deleted_at, ...data } = req.body;
 
   const { error, value } = orgSchema.validate(data);
-  if (error) return res.status(400).json({ 
-    error: "Неверные данные организации", 
-    details: error.details[0].message 
-  });
+  if (error)
+    return res.status(400).json({
+      error: 'Неверные данные организации',
+      details: error.details[0].message,
+    });
 
   const client = await pool.connect();
   try {
@@ -100,7 +112,9 @@ const updateOrg = async (req, res) => {
     if (!currentResult.rowCount) {
       await client.query('ROLLBACK');
       console.error('Organization not found');
-      return res.status(404).json({ error: 'Организация не найдена', details: error.details[0].message });
+      return res
+        .status(404)
+        .json({ error: 'Организация не найдена', details: error.details[0].message });
     }
 
     const currentOrg = currentResult.rows[0];
@@ -113,6 +127,7 @@ const updateOrg = async (req, res) => {
     const updatedOrg = updateResult.rows[0];
 
     await logChanges(
+      client,
       'organization',
       req.params.id,
       currentOrg,
@@ -126,9 +141,9 @@ const updateOrg = async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error updating organization:', err);
-    res.status(500).json({ 
-      error: "Ошибка при обновлении организации",
-      details: err.message
+    res.status(500).json({
+      error: 'Ошибка при обновлении организации',
+      details: err.message,
     });
   } finally {
     client.release();
@@ -137,7 +152,10 @@ const updateOrg = async (req, res) => {
 
 const deleteOrg = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error) return res.status(400).json({ error: "Неверный ID организации", details: error.details[0].message });
+  if (error)
+    return res
+      .status(400)
+      .json({ error: 'Неверный ID организации', details: error.details[0].message });
 
   const client = await pool.connect();
   try {
@@ -159,7 +177,15 @@ const deleteOrg = async (req, res) => {
       req.params.id,
     ]);
 
-    await logChanges('organization', req.params.id, currentOrg, null, 'delete', req.user?.id || 1);
+    await logChanges(
+      client,
+      'organization',
+      req.params.id,
+      currentOrg,
+      null,
+      'delete',
+      req.user?.id || 1
+    );
 
     await client.query('COMMIT');
     res.json({ message: 'Организация удалена' });

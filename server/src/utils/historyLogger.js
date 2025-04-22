@@ -1,9 +1,8 @@
-// utils/historyLogger.js
-
 const pool = require('../database/database');
 
 /**
  * Сравнивает старые и новые данные, записывает изменения в таблицу change_history
+ * @param {object} client - Клиент транзакции (если null, используется pool)
  * @param {string} objectType - Тип объекта (например, 'department')
  * @param {number|string} objectId - ID объекта
  * @param {object|null} oldData - Старые данные (из базы) или null
@@ -11,8 +10,7 @@ const pool = require('../database/database');
  * @param {string} action - Тип действия: 'update', 'delete', 'create'
  * @param {number} userId - ID пользователя
  */
-
-async function logChanges(objectType, objectId, oldData, newData, action, userId) {
+async function logChanges(client, objectType, objectId, oldData, newData, action, userId) {
   const validTypes = ['employee', 'department', 'position', 'hr_operations', 'organization'];
   if (!validTypes.includes(objectType)) {
     throw new Error(`Invalid objectType: ${objectType}`);
@@ -49,11 +47,17 @@ async function logChanges(objectType, objectId, oldData, newData, action, userId
   }
 
   if (Object.keys(changedFields).length > 0) {
-    await pool.query(
-      `INSERT INTO change_history (object_type, object_id, changed_fields, change_by, change_time)
-       VALUES ($1, $2, $3, $4, NOW())`,
-      [objectType, objectId, JSON.stringify(changedFields), userId]
-    );
+    const query = {
+      text: `INSERT INTO change_history (object_type, object_id, changed_fields, change_by, change_time)
+             VALUES ($1, $2, $3, $4, NOW())`,
+      values: [objectType, objectId, JSON.stringify(changedFields), userId],
+    };
+
+    if (client) {
+      await client.query(query);
+    } else {
+      await pool.query(query);
+    }
   }
 }
 
