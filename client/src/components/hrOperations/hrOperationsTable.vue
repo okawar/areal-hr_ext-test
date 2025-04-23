@@ -89,12 +89,12 @@ const handleDelete = async (id) => {
             >
               Дата
             </th>
-            <th
+            <!-- <th
               scope="col"
               class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Действия
-            </th>
+            </th> -->
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -111,7 +111,7 @@ const handleDelete = async (id) => {
             <td class="px-6 py-4 whitespace-nowrap text-sm">
               {{ formatDate(op.operation_date) }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <!-- <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <div class="flex justify-end space-x-2">
                 <UiButton
                   @click="$emit('edit', op)"
@@ -126,7 +126,7 @@ const handleDelete = async (id) => {
                   Удалить
                 </UiButton>
               </div>
-            </td>
+            </td> -->
           </tr>
         </tbody>
       </table>

@@ -81,7 +81,6 @@ const getEmployeeFiles = (employeeId) => {
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <template v-for="emp in employees" :key="emp.id">
-            <!-- Employee Row -->
             <tr class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {{ emp.id }}
@@ -99,7 +98,7 @@ const getEmployeeFiles = (employeeId) => {
                 {{ emp.passport_series }} {{ emp.passport_number }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                {{ emp.salary ? emp.salary.toFixed(2) : '—' }}
+                {{ emp.salary || '—' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex justify-end space-x-2">

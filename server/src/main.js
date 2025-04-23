@@ -1,11 +1,27 @@
 require('dotenv').config({ path: '../../.env' });
 const express = require('express');
-const pgmigrate = require('node-pg-migrate');
 
+const session = require('express-session');
+const passport = require('passport');
+const initializePassport = require('./middleware/auth/passport-config');
+const { ensureAuthenticated, requireRole } = require('./middleware/auth/auth');
+
+initializePassport(passport);
 const app = express();
 app.use(express.json());
 const cors = require('cors');
 app.use(cors());
+
+
+app.use(session({
+  secret: process.env.SECRET_KEY,
+  resave: false,
+  saveUninitialized: false,
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 const orgRoutes = require('./routes/orgRoutes');
 const posRoutes = require('./routes/posRoutes');
@@ -15,6 +31,7 @@ const hrOpRoutes = require('./routes/hrOpRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const changeHistoryRoutes = require('./routes/changeHistoryRoutes');
 const userRoutes = require('./routes/userRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 app.use('/api/orgs', orgRoutes);
 app.use('/api/dept', deptRoutes);
@@ -23,7 +40,10 @@ app.use('/api/emp', empRoutes);
 app.use('/api/hrOp', hrOpRoutes);
 app.use('/api/file', fileRoutes);
 app.use('/api/changeHistory', changeHistoryRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
+
+app.use('/api/users', ensureAuthenticated, requireRole('Администратор'), userRoutes);
+app.use('/api/hr', ensureAuthenticated, requireRole('Менеджер по персоналу'), hrRoutes);
 
 const PORT = process.env.APP_PORT || 3000;
 const HOST = process.env.APP_URL;

@@ -41,7 +41,7 @@ const operationSchema = Joi.object({
     }),
   }),
   action_type: Joi.string()
-    .valid('hire', 'department_change', 'change_salary', 'dismissal')
+    .valid('hire', 'department_change', 'salary_change', 'dismissal')
     .required()
     .messages({
       'string.base': 'Тип операции должен быть строкой',
@@ -51,7 +51,7 @@ const operationSchema = Joi.object({
       'any.required': 'Тип операции обязателен для заполнения',
     }),
   salary: Joi.alternatives().conditional('action_type', {
-    is: Joi.valid('hire', 'change_salary'),
+    is: Joi.valid('hire', 'salary_change'),
     then: Joi.number().precision(2).positive().required().messages({
       'number.base': 'Оклад должен быть числом',
       'number.positive': 'Оклад должен быть положительным числом',

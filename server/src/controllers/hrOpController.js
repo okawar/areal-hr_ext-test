@@ -80,16 +80,20 @@ const createOperation = async (req, res) => {
   try {
     await client.query('BEGIN');
 
+    // Получаем текущие данные сотрудника
     const employeeResult = await client.query(
-      'SELECT id FROM employees WHERE id = $1 AND deleted_at IS NULL',
+      'SELECT id, department_id, position_id, salary FROM employees WHERE id = $1 AND deleted_at IS NULL',
       [value.employee_id]
     );
+    
     if (!employeeResult.rowCount) {
       await client.query('ROLLBACK');
       return res.status(404).json({
         error: 'Сотрудник не найден',
       });
     }
+    
+    const currentEmployeeData = employeeResult.rows[0];
 
     const departmentResult = await client.query(
       'SELECT id FROM departments WHERE id = $1 AND deleted_at IS NULL',
@@ -137,6 +141,7 @@ const createOperation = async (req, res) => {
 
     const createdOperation = result.rows[0];
 
+    // Обновляем только переданные поля, сохраняя существующие значения если поле не передано
     await client.query(
       `
       UPDATE employees SET 
@@ -147,9 +152,9 @@ const createOperation = async (req, res) => {
       WHERE id = $4
     `,
       [
-        value.department_id || null,
-        value.position_id || null,
-        value.salary || null,
+        value.department_id !== undefined ? value.department_id : currentEmployeeData.department_id,
+        value.position_id !== undefined ? value.position_id : currentEmployeeData.position_id,
+        value.salary !== undefined ? value.salary : currentEmployeeData.salary,
         value.employee_id,
       ]
     );
@@ -210,6 +215,21 @@ const updateOperation = async (req, res) => {
   try {
     await client.query('BEGIN');
 
+    // Получаем текущие данные сотрудника
+    const employeeResult = await client.query(
+      'SELECT id, department_id, position_id, salary FROM employees WHERE id = $1 AND deleted_at IS NULL',
+      [value.employee_id]
+    );
+    
+    if (!employeeResult.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        error: 'Сотрудник не найден',
+      });
+    }
+    
+    const currentEmployeeData = employeeResult.rows[0];
+
     const currentResult = await client.query('SELECT * FROM hr_operations WHERE id = $1', [
       req.params.id,
     ]);
@@ -245,6 +265,7 @@ const updateOperation = async (req, res) => {
 
     const updatedOperation = result.rows[0];
 
+    // Обновляем только переданные поля, сохраняя существующие значения если поле не передано
     await client.query(
       `
       UPDATE employees SET 
@@ -255,9 +276,9 @@ const updateOperation = async (req, res) => {
       WHERE id = $4
     `,
       [
-        value.department_id || null,
-        value.position_id || null,
-        value.salary || null,
+        value.department_id !== undefined ? value.department_id : currentEmployeeData.department_id,
+        value.position_id !== undefined ? value.position_id : currentEmployeeData.position_id,
+        value.salary !== undefined ? value.salary : currentEmployeeData.salary,
         value.employee_id,
       ]
     );
@@ -285,6 +306,7 @@ const updateOperation = async (req, res) => {
     client.release();
   }
 };
+
 
 const deleteOperation = async (req, res) => {
   const { error } = idSchema.validate(req.params);
