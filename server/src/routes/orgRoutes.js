@@ -10,6 +10,10 @@ const {
 
 const router = express.Router();
 
+const { ensureAuthenticated } = require('../middleware/auth/auth');
+
+router.use(ensureAuthenticated);
+
 router.get('/', getOrgs);
 router.get('/:id', getOrgById);
 router.post('/', createOrg);

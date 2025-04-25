@@ -6,7 +6,7 @@ const positionSchema = Joi.object({
     'number.integer': 'ID должен быть целым числом',
     'number.positive': 'ID должен быть положительным числом',
   }),
-  name: Joi.string().trim().min(2).max(100).required().messages({
+  name: Joi.string().trim().min(2).max(255).required().messages({
     'string.base': 'Название должно быть строкой',
     'string.empty': 'Название не может быть пустым',
     'string.min': 'Название должно содержать минимум {#limit} символа',

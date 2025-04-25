@@ -1,4 +1,3 @@
-
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -23,6 +22,5 @@ if (require.main === module) {
 }
 
 console.log('Пароль:', typeof process.env.DB_PASSWORD, process.env.DB_PASSWORD);
-
 
 module.exports = seedAll;

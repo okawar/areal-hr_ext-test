@@ -19,15 +19,15 @@ const actionTypes = ['Прием на работу', 'Увольнение', 'И
 
 const actionTypesMap = {
   'Прием на работу': 'hire',
-  'Увольнение': 'dismissal',
+  Увольнение: 'dismissal',
   'Изменение зарплаты': 'salary_change',
   'Изменение отдела': 'department_change',
 };
 
 const actionTypeOptions = computed(() => {
-  return actionTypes.map(type => ({
+  return actionTypes.map((type) => ({
     id: type,
-    name: type
+    name: type,
   }));
 });
 
@@ -37,7 +37,7 @@ const reverseActionTypesMap = Object.fromEntries(
 
 const employeeFullName = (employee) => {
   if (!employee) return '';
-  
+
   let name = `${employee.last_name} ${employee.first_name}`;
   if (employee.middle_name) {
     name += ` ${employee.middle_name}`;
@@ -122,16 +122,16 @@ const save = async () => {
     action_type: actionTypesMap[form.value.action_type],
     operation_date: form.value.operation_date,
   };
-  
+
   if (['Прием на работу', 'Изменение отдела'].includes(form.value.action_type)) {
     dataToSend.department_id = toNullableNumber(form.value.department_id);
     dataToSend.position_id = toNullableNumber(form.value.position_id);
   }
-  
+
   if (['Прием на работу'].includes(form.value.action_type)) {
     dataToSend.position_id = toNullableNumber(form.value.position_id);
   }
-  
+
   if (['Прием на работу', 'Изменение зарплаты'].includes(form.value.action_type)) {
     dataToSend.salary = toNullableNumber(form.value.salary);
   }
@@ -166,7 +166,6 @@ watch(
 );
 </script>
 
-
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
     <div
@@ -193,12 +192,12 @@ watch(
           option-value="id"
           :error="errors && errors.employee_id"
         >
-        <template #option="{ option }">
-        {{ employeeFullName(option) }}
-      </template>
-      <template #selected-option="{ option }">
-        {{ employeeFullName(option) }}
-      </template>
+          <template #option="{ option }">
+            {{ employeeFullName(option) }}
+          </template>
+          <template #selected-option="{ option }">
+            {{ employeeFullName(option) }}
+          </template>
         </UiSelect>
 
         <UiSelect
@@ -209,8 +208,7 @@ watch(
           option-value="id"
           :error="errors && errors.action_type"
         >
-      </UiSelect>
-
+        </UiSelect>
 
         <UiSelect
           v-if="['Прием на работу', 'Изменение отдела'].includes(form.action_type)"
@@ -221,7 +219,7 @@ watch(
           option-value="id"
           :error="errors && errors.department_id"
         >
-       </UiSelect>
+        </UiSelect>
 
         <UiSelect
           v-if="['Прием на работу', 'Изменение отдела'].includes(form.action_type)"
@@ -232,9 +230,8 @@ watch(
           option-value="id"
           :error="errors && errors.position_id"
         >
-       </UiSelect>
-        
-      
+        </UiSelect>
+
         <!-- <UiSelect
           v-if="['Прием на работу'].includes(form.action_type)"
           v-model="form.position_id"

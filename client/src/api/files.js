@@ -8,7 +8,7 @@ export default {
   create(data) {
     const formData = new FormData();
 
-    Object.keys(data).forEach(key => {
+    Object.keys(data).forEach((key) => {
       const value = data[key];
 
       if (value === null || value === undefined) return;
@@ -30,7 +30,7 @@ export default {
   update(id, data) {
     const formData = new FormData();
 
-    Object.keys(data).forEach(key => {
+    Object.keys(data).forEach((key) => {
       const value = data[key];
 
       if (value === null || value === undefined) return;
@@ -54,8 +54,8 @@ export default {
   },
 
   download(id) {
-    return apiClient.get(`/api/file/${id}/download`, { 
-      responseType: 'blob' 
+    return apiClient.get(`/api/file/${id}/download`, {
+      responseType: 'blob',
     });
   },
 };

@@ -197,6 +197,12 @@ const deleteUser = async (req, res) => {
     });
   }
 
+  if (req.user?.id?.toString() === req.params.id.toString()) {
+    return res.status(403).json({
+      error: 'Нельзя удалить самого себя',
+    });
+  }
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

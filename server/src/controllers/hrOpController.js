@@ -3,7 +3,6 @@ const { operationSchema } = require('../validation/operation.schema');
 const { idSchema } = require('../validation/id.schema');
 const { logChanges } = require('../utils/historyLogger');
 
-
 const getOperations = async (req, res) => {
   try {
     const query = `
@@ -85,14 +84,14 @@ const createOperation = async (req, res) => {
       'SELECT id, department_id, position_id, salary FROM employees WHERE id = $1 AND deleted_at IS NULL',
       [value.employee_id]
     );
-    
+
     if (!employeeResult.rowCount) {
       await client.query('ROLLBACK');
       return res.status(404).json({
         error: 'Сотрудник не найден',
       });
     }
-    
+
     const currentEmployeeData = employeeResult.rows[0];
 
     const departmentResult = await client.query(
@@ -177,7 +176,7 @@ const createOperation = async (req, res) => {
       null,
       createdOperation,
       'create',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');
@@ -215,19 +214,18 @@ const updateOperation = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // Получаем текущие данные сотрудника
     const employeeResult = await client.query(
       'SELECT id, department_id, position_id, salary FROM employees WHERE id = $1 AND deleted_at IS NULL',
       [value.employee_id]
     );
-    
+
     if (!employeeResult.rowCount) {
       await client.query('ROLLBACK');
       return res.status(404).json({
         error: 'Сотрудник не найден',
       });
     }
-    
+
     const currentEmployeeData = employeeResult.rows[0];
 
     const currentResult = await client.query('SELECT * FROM hr_operations WHERE id = $1', [
@@ -265,7 +263,6 @@ const updateOperation = async (req, res) => {
 
     const updatedOperation = result.rows[0];
 
-    // Обновляем только переданные поля, сохраняя существующие значения если поле не передано
     await client.query(
       `
       UPDATE employees SET 
@@ -290,7 +287,7 @@ const updateOperation = async (req, res) => {
       currentOperation,
       updatedOperation,
       'update',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');
@@ -306,7 +303,6 @@ const updateOperation = async (req, res) => {
     client.release();
   }
 };
-
 
 const deleteOperation = async (req, res) => {
   const { error } = idSchema.validate(req.params);
@@ -346,7 +342,7 @@ const deleteOperation = async (req, res) => {
       currentOperation,
       null,
       'delete',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');

@@ -130,10 +130,9 @@ const handleFileError = (error) => {
   }
 };
 
-
 const filteredEmployees = computed(() => {
   return employees.value.filter((emp) =>
-     `${emp.last_name} ${emp.first_name} ${emp.middle_name || ''}`
+    `${emp.last_name} ${emp.first_name} ${emp.middle_name || ''}`
       .toLowerCase()
       .includes(search.value.toLowerCase())
   );

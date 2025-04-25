@@ -18,7 +18,7 @@ const form = ref({
   middle_name: '',
   login: '',
   password: '',
-  role: ''
+  role: '',
 });
 
 const errors = ref({});
@@ -40,8 +40,8 @@ watch(
         first_name: user.first_name || '',
         middle_name: user.middle_name || '',
         login: user.login || '',
-        password: '', 
-        role: user.role || 'user'
+        password: '',
+        role: user.role || 'user',
       };
     } else {
       resetForm();
@@ -58,7 +58,7 @@ const resetForm = () => {
     middle_name: '',
     login: '',
     password: '',
-    role: 'user'
+    role: 'user',
   };
 };
 
@@ -75,7 +75,7 @@ const save = async () => {
     first_name: form.value.first_name,
     middle_name: form.value.middle_name || '',
     login: form.value.login,
-    role: form.value.role
+    role: form.value.role,
   };
 
   if (form.value.password || !form.value.id) {

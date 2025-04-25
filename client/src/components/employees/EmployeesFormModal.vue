@@ -1,9 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import employeesApi from '../../api/employees';
-import filesApi from '../../api/files'; 
 import UiInput from '../ui/UiInput.vue';
-import UiSelect from '../ui/UiSelect.vue';
 import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
@@ -45,10 +43,10 @@ const form = ref({
   apartment: '',
   department_id: null,
   position_id: null,
-  salary: '', 
+  salary: '',
   file_name: '',
   file_path: '',
-  file: null, 
+  file: null,
 });
 
 const handleFileUpload = (event) => {
@@ -94,29 +92,29 @@ const resetForm = () => {
 
 const isSubmitting = ref(false);
 
-const errors = ref({})
+const errors = ref({});
 
-  const save = async () => {
+const save = async () => {
   if (isSubmitting.value) return;
 
   isSubmitting.value = true;
   errors.value = {};
 
   const payloadData = {
-        last_name: form.value.last_name,
-        first_name: form.value.first_name,
-        middle_name: form.value.middle_name || '',
-        birth_date: form.value.birth_date,
-        passport_series: form.value.passport_series,
-        passport_number: form.value.passport_number,
-        passport_issue_date: form.value.passport_issue_date,
-        passport_issued_by: form.value.passport_issued_by,
-        region: form.value.region,
-        locality: form.value.locality,
-        street: form.value.street,
-        house: form.value.house,
-        building: form.value.building || '',
-        apartment: form.value.apartment || '',
+    last_name: form.value.last_name,
+    first_name: form.value.first_name,
+    middle_name: form.value.middle_name || '',
+    birth_date: form.value.birth_date,
+    passport_series: form.value.passport_series,
+    passport_number: form.value.passport_number,
+    passport_issue_date: form.value.passport_issue_date,
+    passport_issued_by: form.value.passport_issued_by,
+    region: form.value.region,
+    locality: form.value.locality,
+    street: form.value.street,
+    house: form.value.house,
+    building: form.value.building || '',
+    apartment: form.value.apartment || '',
   };
 
   try {
@@ -137,7 +135,7 @@ const errors = ref({})
   } finally {
     isSubmitting.value = false;
   }
-}; 
+};
 </script>
 
 <template>

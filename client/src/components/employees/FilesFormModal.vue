@@ -62,7 +62,6 @@ const save = async () => {
   }
 };
 
-
 watch(
   () => props.file,
   (file) => {
@@ -148,7 +147,6 @@ watch(
           <p v-if="errors.file_name" class="mt-1 text-sm text-red-600">{{ errors.file_name }}</p>
           <p v-if="errors.file_path" class="mt-1 text-sm text-red-600">{{ errors.file_path }}</p>
         </div>
-
 
         <UiTextarea
           id="comment"

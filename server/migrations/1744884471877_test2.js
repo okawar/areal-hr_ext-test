@@ -1,6 +1,6 @@
-/**
- * @type {import('node-pg-migrate').MigrationBuilder}
- */
+const argon2 = require('argon2');
+require('dotenv').config({ path: '../../../.env' });
+
 exports.shorthands = {
   timestamps: {
     created_at: { type: 'timestamp', notNull: true, default: 'now()' },
@@ -9,7 +9,7 @@ exports.shorthands = {
   },
 };
 
-exports.up = (pgm) => {
+exports.up = async (pgm) => {
   pgm.createTable('organizations', {
     id: 'id',
     name: { type: 'varchar(255)', notNull: true },
@@ -138,6 +138,22 @@ exports.up = (pgm) => {
     changed_fields: { type: 'jsonb', notNull: true },
     created_at: { type: 'timestamp', notNull: true, default: 'now()' },
   });
+
+  const adminLogin = process.env.ADMIN_LOGIN || 'admin';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'adminpassword';
+  const hashedPassword = await argon2.hash(adminPassword);
+
+  const res = await pgm.db.query('SELECT * FROM users WHERE login = $1', [adminLogin]);
+
+  if (res.rows.length === 0) {
+    await pgm.db.query(
+      'INSERT INTO users (login, password_hash, role, created_at) VALUES ($1, $2, $3, NOW())',
+      [adminLogin, hashedPassword, 'admin']
+    );
+    console.log('Администратор создан!');
+  } else {
+    console.log('Администратор уже существует');
+  }
 };
 
 exports.down = (pgm) => {

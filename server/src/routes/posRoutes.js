@@ -1,5 +1,4 @@
 const express = require('express');
-
 const {
   getPos,
   getPosById,
@@ -8,7 +7,11 @@ const {
   deletePos,
 } = require('../controllers/posController');
 
+const { ensureAuthenticated } = require('../middleware/auth/auth');
+
 const router = express.Router();
+
+router.use(ensureAuthenticated);
 
 router.get('/', getPos);
 router.get('/:id', getPosById);

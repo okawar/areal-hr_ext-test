@@ -4,24 +4,33 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const initializePassport = require('./middleware/auth/passport-config');
-const { ensureAuthenticated, requireRole } = require('./middleware/auth/auth');
+const { requireRole } = require('./middleware/auth/auth');
 
 initializePassport(passport);
 const app = express();
 app.use(express.json());
 const cors = require('cors');
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true,
+  })
+);
 
-
-app.use(session({
-  secret: process.env.SECRET_KEY,
-  resave: false,
-  saveUninitialized: false,
-}));
+app.use(
+  session({
+    secret: process.env.SECRET_KEY,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    },
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 const orgRoutes = require('./routes/orgRoutes');
 const posRoutes = require('./routes/posRoutes');
@@ -42,8 +51,7 @@ app.use('/api/file', fileRoutes);
 app.use('/api/changeHistory', changeHistoryRoutes);
 app.use('/api/auth', authRoutes);
 
-app.use('/api/users', ensureAuthenticated, requireRole('Администратор'), userRoutes);
-app.use('/api/hr', ensureAuthenticated, requireRole('Менеджер по персоналу'), hrRoutes);
+app.use('/api/users', requireRole('admin'), userRoutes);
 
 const PORT = process.env.APP_PORT || 3000;
 const HOST = process.env.APP_URL;

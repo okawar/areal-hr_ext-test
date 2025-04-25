@@ -107,15 +107,7 @@ const createEmp = async (req, res) => {
 
     const createdEmp = result.rows[0];
 
-    await logChanges(
-      client,
-      'employee',
-      createdEmp.id,
-      null,
-      createdEmp,
-      'create',
-      req.user?.id || 1
-    );
+    await logChanges(client, 'employee', createdEmp.id, null, createdEmp, 'create', req.user.id);
 
     await client.query('COMMIT');
     res.json(createdEmp);
@@ -203,7 +195,7 @@ const updateEmp = async (req, res) => {
       currentEmp,
       updatedEmp,
       'update',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');
@@ -248,15 +240,7 @@ const deleteEmp = async (req, res) => {
       req.params.id,
     ]);
 
-    await logChanges(
-      client,
-      'employee',
-      req.params.id,
-      currentEmp,
-      null,
-      'delete',
-      req.user?.id || 1
-    );
+    await logChanges(client, 'employee', req.params.id, currentEmp, null, 'delete', req.user.id);
 
     await client.query('COMMIT');
     res.json({ message: 'Сотрудник удален' });

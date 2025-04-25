@@ -42,13 +42,14 @@ const handleSave = async () => {
 
 const filteredUsers = computed(() => {
   if (!search.value) return users.value;
-  
+
   const searchLower = search.value.toLowerCase();
-  return users.value.filter((user) => 
-    user.last_name.toLowerCase().includes(searchLower) ||
-    user.first_name.toLowerCase().includes(searchLower) ||
-    user.middle_name?.toLowerCase().includes(searchLower) ||
-    user.login.toLowerCase().includes(searchLower)
+  return users.value.filter(
+    (user) =>
+      user.last_name.toLowerCase().includes(searchLower) ||
+      user.first_name.toLowerCase().includes(searchLower) ||
+      user.middle_name?.toLowerCase().includes(searchLower) ||
+      user.login.toLowerCase().includes(searchLower)
   );
 });
 
@@ -60,26 +61,19 @@ onMounted(() => {
 <template>
   <div class="p-6 bg-gray-50 min-h-screen text-gray-800">
     <h1 class="text-3xl font-bold mb-6 text-black">Управление пользователями</h1>
-    
+
     <div class="mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
       <UiInput v-model="search" class="w-full md:w-1/3" placeholder="Поиск пользователей..." />
-      <UiButton @click="openModal" class="w-full md:w-auto">
-        Добавить пользователя
-      </UiButton>
+      <UiButton @click="openModal" class="w-full md:w-auto"> Добавить пользователя </UiButton>
     </div>
-    
+
     <UsersTable
       :users="filteredUsers"
       @edit="openModal"
       @delete="usersApi.delete"
       @refresh="fetchUsers"
     />
-    
-    <UsersFormModal
-      v-if="showModal"
-      :user="currentUser"
-      @close="closeModal"
-      @save="handleSave"
-    />
+
+    <UsersFormModal v-if="showModal" :user="currentUser" @close="closeModal" @save="handleSave" />
   </div>
 </template>

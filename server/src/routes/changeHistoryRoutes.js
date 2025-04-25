@@ -10,6 +10,9 @@ const {
 
 const router = express.Router();
 
+const { ensureAuthenticated } = require('../middleware/auth/auth');
+router.use(ensureAuthenticated);
+
 router.get('/', getChangeHistory);
 router.get('/:id', getChangeHistoryById);
 router.post('/', createChangeHistory);

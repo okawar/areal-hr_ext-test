@@ -4,8 +4,7 @@
       {{ label }}
     </label>
     <input
-      style="padding: 15px 20px;
-      font-size: 18px;"
+      style="padding: 15px 20px; font-size: 18px"
       :id="id"
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"

@@ -109,7 +109,7 @@ const createChangeHistory = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    const changeBy = req.user?.id || 1;
+    const changeBy = req.user.id;
 
     const query = `
       INSERT INTO change_history 
@@ -160,7 +160,7 @@ const updateChangeHistory = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    const changeBy = req.user?.id || 1;
+    const changeBy = req.user.id;
 
     const checkResult = await client.query('SELECT 1 FROM change_history WHERE id = $1', [
       req.params.id,

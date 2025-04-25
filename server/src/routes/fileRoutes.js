@@ -11,6 +11,10 @@ const {
 
 const router = express.Router();
 
+const { ensureAuthenticated } = require('../middleware/auth/auth');
+
+router.use(ensureAuthenticated);
+
 router.get('/', getFile);
 router.get('/:id', getFileById);
 router.get('/:id/download', downloadFile);

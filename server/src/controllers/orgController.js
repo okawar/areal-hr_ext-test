@@ -67,7 +67,7 @@ const createOrg = async (req, res) => {
       null,
       createdOrg,
       'create',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');
@@ -133,7 +133,7 @@ const updateOrg = async (req, res) => {
       currentOrg,
       updatedOrg,
       'update',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');
@@ -184,7 +184,7 @@ const deleteOrg = async (req, res) => {
       currentOrg,
       null,
       'delete',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');

@@ -12,9 +12,8 @@ const emit = defineEmits(['edit', 'delete', 'refresh']);
 
 const formatRole = (role) => {
   const roles = {
-    'admin': 'Администратор',
-    'user': 'Пользователь',
-    'manager': 'Менеджер'
+    admin: 'Администратор',
+    hr_manager: 'Менеджер',
   };
   return roles[role] || role;
 };
@@ -70,11 +69,7 @@ const handleDelete = async (id) => {
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr
-            v-for="user in users"
-            :key="user.id"
-            class="hover:bg-gray-50 transition-colors"
-          >
+          <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
               {{ user.id }}
             </td>
@@ -85,12 +80,12 @@ const handleDelete = async (id) => {
               {{ user.login }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
-              <span 
+              <span
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium"
                 :class="{
                   'bg-blue-100 text-blue-800': user.role === 'admin',
                   'bg-green-100 text-green-800': user.role === 'manager',
-                  'bg-gray-100 text-gray-800': user.role === 'user'
+                  'bg-gray-100 text-gray-800': user.role === 'user',
                 }"
               >
                 {{ formatRole(user.role) }}

@@ -1,13 +1,14 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: `${import.meta.env.VITE_APP_URL}:${import.meta.env.VITE_APP_PORT}`, 
+  baseURL: `${import.meta.env.VITE_APP_URL}:${import.meta.env.VITE_APP_PORT}`,
   headers: {
-    'Accept': 'application/json',
+    Accept: 'application/json',
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
   responseType: 'json',
-  responseEncoding: 'utf8'
+  responseEncoding: 'utf8',
 });
 
 export default apiClient;

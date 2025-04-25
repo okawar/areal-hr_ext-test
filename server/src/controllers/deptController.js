@@ -73,7 +73,7 @@ const createDept = async (req, res) => {
       null,
       createdDept,
       'create',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');
@@ -139,7 +139,7 @@ const updateDept = async (req, res) => {
       currentDept,
       updatedDept,
       'update',
-      req.user?.id || 1
+      req.user.id
     );
 
     await client.query('COMMIT');
@@ -187,15 +187,7 @@ const deleteDept = async (req, res) => {
       req.params.id,
     ]);
 
-    await logChanges(
-      client,
-      'department',
-      req.params.id,
-      currentDept,
-      null,
-      'delete',
-      req.user?.id || 1
-    );
+    await logChanges(client, 'department', req.params.id, currentDept, null, 'delete', req.user.id);
 
     await client.query('COMMIT');
     res.json({
