@@ -77,18 +77,80 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
 const user = ref(null);
 
+const authChecked = ref(false); 
+
+const clearUserAndRedirect = () => {
+  localStorage.removeItem('user');
+  user.value = null;
+  router.push('/login');
+};
+
 onMounted(() => {
-  const savedUser = localStorage.getItem('user');
-  if (savedUser) {
-    user.value = JSON.parse(savedUser);
-  }
+  checkAuthAndRedirect();
 });
+
+const checkAuthAndRedirect = () => {
+  const savedUser = localStorage.getItem('user');
+  
+  if (savedUser) {
+    try {
+      const userData = JSON.parse(savedUser);
+      if (userData && userData.id && userData.role) {
+        user.value = userData;
+        
+        if (route.path === '/' || route.path === '/login') {
+          router.replace('/departments');
+        }
+      } else {
+        if (route.path !== '/login') {
+          router.replace('/login');
+        }
+      }
+    } catch (e) {
+      if (route.path !== '/login') {
+        router.replace('/login');
+      }
+    }
+  } else {
+    if (route.path !== '/login') {
+      router.replace('/login');
+    }
+  }
+  
+  authChecked.value = true; 
+};
+
+watch(
+  () => route.path,
+  (newPath) => {
+    if (!authChecked.value) return;
+    
+    if (!user.value && newPath !== '/login') {
+      router.replace('/login');
+    } else if (user.value && newPath === '/login') {
+      router.replace('/departments');
+    } else if (user.value && newPath === '/') {
+      router.replace('/departments');
+    }
+  }
+);
+
+watch(
+  () => user.value,
+  (newUser) => {
+    if (newUser && (route.path === '/login' || route.path === '/')) {
+      router.replace('/departments');
+    } else if (!newUser && route.path !== '/login') {
+      router.replace('/login');
+    }
+  }
+);
 
 const tabs = computed(() => {
   const baseTabs = [
@@ -134,8 +196,7 @@ const tabs = computed(() => {
 const isActive = (path) => route.path === path;
 
 const logout = () => {
-  localStorage.removeItem('user');
-  router.push('/login');
+  clearUserAndRedirect()
 };
 </script>
 
