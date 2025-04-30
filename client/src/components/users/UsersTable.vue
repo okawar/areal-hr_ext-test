@@ -19,14 +19,12 @@ const formatRole = (role) => {
 };
 
 const handleDelete = async (id) => {
-  if (confirm('Удалить этого пользователя?')) {
     try {
       await emit('delete', id);
       emit('refresh');
     } catch (e) {
       console.error('Ошибка при удалении:', e);
     }
-  }
 };
 </script>
 

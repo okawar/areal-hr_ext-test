@@ -139,25 +139,21 @@ const filteredEmployees = computed(() => {
 });
 
 const handleDeleteEmployee = async (id) => {
-  if (confirm('Удалить этого сотрудника?')) {
     try {
       await employeesApi.delete(id);
       await fetchEmployees();
     } catch (e) {
       console.error('Ошибка при удалении:', e);
     }
-  }
 };
 
 const handleDeleteFile = async (id) => {
-  if (confirm('Удалить этот файл?')) {
     try {
       await filesApi.delete(id);
       await fetchFiles();
     } catch (error) {
       console.error('Ошибка при удалении файла:', error);
     }
-  }
 };
 
 onMounted(() => {

@@ -11,13 +11,11 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'delete', 'refresh']);
 
 const handleDelete = async (id) => {
-  if (confirm('Удалить эту организацию?')) {
-    try {
-      await emit('delete', id);
-      emit('refresh');
-    } catch (error) {
-      console.error('Ошибка при удалении организации:', error);
-    }
+  try {
+    await emit('delete', id);
+    emit('refresh');
+  } catch (error) {
+    console.error('Ошибка при удалении организации:', error);
   }
 };
 </script>

@@ -177,6 +177,7 @@ onMounted(() => {
     <HrOperationsFormModal
       v-if="showModal"
       :operation="currentOperation"
+      :operations="operations"
       :employees="employees"
       :departments="departments"
       :positions="positions"

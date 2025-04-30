@@ -1,5 +1,4 @@
 <script setup>
-import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
   operations: {
@@ -27,15 +26,15 @@ const getEmployeeName = (id) => {
   return employee ? `${employee.last_name} ${employee.first_name}` : 'Не указан';
 };
 
-const getDepartmentName = (id) => {
-  const department = props.departments.find((d) => d.id === id);
-  return department ? department.name : '—';
-};
+// const getDepartmentName = (id) => {
+//   const department = props.departments.find((d) => d.id === id);
+//   return department ? department.name : '—';
+// };
 
-const getPositionName = (id) => {
-  const position = props.positions.find((p) => p.id === id);
-  return position ? position.name : '—';
-};
+// const getPositionName = (id) => {
+//   const position = props.positions.find((p) => p.id === id);
+//   return position ? position.name : '—';
+// };
 
 const formatDate = (dateString) => {
   if (!dateString) return '—';
@@ -43,20 +42,20 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('ru-RU');
 };
 
-const formatSalary = (salary) => {
-  return salary ? salary.toLocaleString('ru-RU') : '—';
-};
+// const formatSalary = (salary) => {
+//   return salary ? salary.toLocaleString('ru-RU') : '—';
+// };
 
-const handleDelete = async (id) => {
-  if (confirm('Удалить эту операцию?')) {
-    try {
-      await emit('delete', id);
-      emit('refresh');
-    } catch (e) {
-      console.error('Ошибка при удалении:', e);
-    }
-  }
-};
+// const handleDelete = async (id) => {
+//   if (confirm('Удалить эту операцию?')) {
+//     try {
+//       await emit('delete', id);
+//       emit('refresh');
+//     } catch (e) {
+//       console.error('Ошибка при удалении:', e);
+//     }
+//   }
+// };
 </script>
 
 <template>

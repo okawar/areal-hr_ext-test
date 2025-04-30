@@ -5,7 +5,7 @@ const seedOrganizations = require('./seedOrganizations');
 const seedPositions = require('./seedPositions');
 const seedDepartments = require('./seedDepartments');
 const seedEmployees = require('./seedEmployees');
-const seedUsers = require('./seedUsers');
+// const seedUsers = require('./seedUsers');
 
 async function seedAll() {
   console.log('🚀 Seeding test data...');
@@ -13,7 +13,7 @@ async function seedAll() {
   await seedPositions();
   await seedDepartments();
   await seedEmployees();
-  await seedUsers();
+  // await seedUsers();
   console.log('✅ All seeds executed');
 }
 

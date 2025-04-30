@@ -39,18 +39,14 @@ import loginApi from '../../api/login';
 export default {
   data() {
     return {
-      loginData: {
-        login: '',
-        password: '',
-      },
+      loginData: { login: '', password: '' },
       error: '',
     };
   },
   methods: {
     async login() {
       try {
-        const res = await loginApi.login(this.loginData);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
+        await loginApi.login(this.loginData);
         this.$router.push('/');
       } catch (err) {
         this.error = err.response?.data?.error || 'Ошибка входа';
@@ -59,3 +55,4 @@ export default {
   },
 };
 </script>
+

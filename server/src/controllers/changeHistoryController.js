@@ -4,17 +4,57 @@ const pool = require('../database/database');
 const { ChangeHistorySchema } = require('../validation/changeHistory.schema');
 const { idSchema } = require('../validation/id.schema');
 
+// Словарь для перевода типов объектов на русский язык
+const objectTypeTranslations = {
+  'organization': 'Организация',
+  'department': 'Отдел',
+  'position': 'Должность',
+  'employee': 'Сотрудник',
+  'hr_operations': 'HR-операция'
+};
+
+// Функция для форматирования данных истории изменений
+const formatChangeHistoryData = (data) => {
+  // Если это массив, обрабатываем каждый элемент
+  if (Array.isArray(data)) {
+    return data.map(item => formatChangeHistoryData(item));
+  }
+  
+  // Перевод типа объекта на русский
+  if (data.object_type) {
+    data.object_type_ru = objectTypeTranslations[data.object_type] || data.object_type;
+  }
+  
+  // Форматирование информации о пользователе
+  if (data.change_by_info) {
+    data.change_by_display = `${data.change_by_info.last_name || ''} ${data.change_by_info.first_name || ''} ${data.change_by_info.middle_name || ''}`.trim();
+    if (!data.change_by_display) {
+      data.change_by_display = data.change_by_info.login || `ID: ${data.change_by}`;
+    }
+  } else {
+    data.change_by_display = `ID: ${data.change_by}`;
+  }
+  
+  return data;
+};
+
 const getChangeHistory = async (req, res) => {
   try {
     const query = `
       SELECT ch.*, 
-             u.id as change_by
+             json_build_object(
+               'id', u.id,
+               'login', u.login,
+               'first_name', u.first_name,
+               'last_name', u.last_name,
+               'middle_name', u.middle_name
+             ) as change_by_info
       FROM change_history ch
       LEFT JOIN users u ON ch.change_by = u.id
       ORDER BY ch.change_time DESC
     `;
     const result = await pool.query(query);
-    res.json(result.rows);
+    res.json(formatChangeHistoryData(result.rows));
   } catch (err) {
     console.error('Error fetching change history:', err);
     res.status(500).json({
@@ -36,7 +76,13 @@ const getChangeHistoryById = async (req, res) => {
   try {
     const query = `
       SELECT ch.*, 
-             u.id as change_by_username
+             json_build_object(
+               'id', u.id,
+               'login', u.login,
+               'first_name', u.first_name,
+               'last_name', u.last_name,
+               'middle_name', u.middle_name
+             ) as change_by_info
       FROM change_history ch
       LEFT JOIN users u ON ch.change_by = u.id
       WHERE ch.id = $1
@@ -49,7 +95,7 @@ const getChangeHistoryById = async (req, res) => {
       });
     }
 
-    res.json(result.rows[0]);
+    res.json(formatChangeHistoryData(result.rows[0]));
   } catch (err) {
     console.error('Error fetching change history by ID:', err);
     res.status(500).json({
@@ -78,7 +124,13 @@ const getChangeHistoryByObject = async (req, res) => {
   try {
     const query = `
       SELECT ch.*, 
-             u.id as change_by
+             json_build_object(
+               'id', u.id,
+               'login', u.login,
+               'first_name', u.first_name,
+               'last_name', u.last_name,
+               'middle_name', u.middle_name
+             ) as change_by_info
       FROM change_history ch
       LEFT JOIN users u ON ch.change_by = u.id
       WHERE ch.object_type = $1 AND ch.object_id = $2
@@ -86,7 +138,7 @@ const getChangeHistoryByObject = async (req, res) => {
     `;
     const result = await pool.query(query, [req.params.object_type, req.params.object_id]);
 
-    res.json(result.rows);
+    res.json(formatChangeHistoryData(result.rows));
   } catch (err) {
     console.error('Error fetching change history by object:', err);
     res.status(500).json({
@@ -124,8 +176,21 @@ const createChangeHistory = async (req, res) => {
       value.changed_fields,
     ]);
 
+    // Получаем данные пользователя для форматирования ответа
+    const userQuery = `
+      SELECT id, login, first_name, last_name, middle_name
+      FROM users
+      WHERE id = $1
+    `;
+    const userResult = await client.query(userQuery, [changeBy]);
+    
+    const recordWithUser = { 
+      ...result.rows[0],
+      change_by_info: userResult.rows[0] || null
+    };
+
     await client.query('COMMIT');
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(formatChangeHistoryData(recordWithUser));
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error creating change history:', err);
@@ -193,8 +258,21 @@ const updateChangeHistory = async (req, res) => {
       req.params.id,
     ]);
 
+    // Получаем данные пользователя для форматирования ответа
+    const userQuery = `
+      SELECT id, login, first_name, last_name, middle_name
+      FROM users
+      WHERE id = $1
+    `;
+    const userResult = await client.query(userQuery, [changeBy]);
+    
+    const recordWithUser = { 
+      ...result.rows[0],
+      change_by_info: userResult.rows[0] || null
+    };
+
     await client.query('COMMIT');
-    res.json(result.rows[0]);
+    res.json(formatChangeHistoryData(recordWithUser));
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error updating change history:', err);

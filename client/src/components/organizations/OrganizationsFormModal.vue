@@ -79,12 +79,18 @@ watch(
       </div>
 
       <div class="space-y-4">
+        <p class="text-sm text-gray-500 mb-2">
+          Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
+        </p>
+
+
         <UiInput
           v-model="form.name"
           :error="errors.name"
-          label="Название"
+          label="Название *"
           placeholder="Введите название организации"
         />
+
         <UiTextarea
           v-model="form.comment"
           label="Комментарий"

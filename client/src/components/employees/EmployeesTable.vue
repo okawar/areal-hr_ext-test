@@ -1,5 +1,6 @@
 <script setup>
 import UiButton from '../ui/UiButton.vue';
+import filesApi from '../../api/files';
 
 const props = defineProps({
   employees: {
@@ -27,6 +28,34 @@ const getFullName = (emp) => {
 const getEmployeeFiles = (employeeId) => {
   return props.files.filter((file) => file.employee_id === employeeId);
 };
+
+const handleDownloadFile = async (file) => {
+  try {
+    if (file.isDownloading) return;
+    file.isDownloading = true;
+
+    const response = await filesApi.download(file.id);
+    
+    const url = window.URL.createObjectURL(response.data);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.file_name || 'file'; 
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      file.isDownloading = false;
+    }, 100);
+  } catch (error) {
+    console.error('Ошибка при скачивании файла:', error);
+    alert('Не удалось скачать файл.');
+    file.isDownloading = false;
+  }
+};
 </script>
 
 <template>
@@ -35,71 +64,24 @@ const getEmployeeFiles = (employeeId) => {
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wider">
           <tr>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              ID
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              ФИО
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Отдел
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Должность
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Паспорт
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Зарплата
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Действия
-            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ФИО</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Отдел</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Должность</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Паспорт</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Зарплата</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <template v-for="emp in employees" :key="emp.id">
             <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ emp.id }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ getFullName(emp) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                {{ emp.department_name || '—' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                {{ emp.position_name || '—' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                {{ emp.passport_series }} {{ emp.passport_number }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                {{ emp.salary || '—' }}
-              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ emp.id }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ getFullName(emp) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ emp.department_name || '—' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ emp.position_name || '—' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ emp.passport_series }} {{ emp.passport_number }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ emp.salary || '—' }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex justify-end space-x-2">
                   <UiButton
@@ -161,6 +143,12 @@ const getEmployeeFiles = (employeeId) => {
                     class="px-2 py-1 bg-red-500 text-red-600 rounded-lg text-xs transition"
                   >
                     Удалить
+                  </UiButton>
+                  <UiButton
+                    @click="handleDownloadFile(file)"
+                    class="px-2 py-1 bg-blue-500 text-blue-50 rounded-lg text-xs transition"
+                  >
+                    Скачать
                   </UiButton>
                 </div>
               </td>

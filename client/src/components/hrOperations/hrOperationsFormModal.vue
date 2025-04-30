@@ -7,6 +7,10 @@ import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
   operation: Object,
+  operations: {
+    type: Array, 
+    default: () => []
+  },
   employees: Array,
   departments: Array,
   positions: Array,
@@ -15,17 +19,38 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save', 'error']);
 
-const actionTypes = ['Прием на работу', 'Увольнение', 'Изменение зарплаты', 'Изменение отдела'];
+const getEmployeeLastOperation = (employeeId) => {
+  if (!employeeId || !props.operations || !props.operations.length) return null;
+  
+  const employeeOperations = props.operations
+    .filter(op => op.employee_id === Number(employeeId))
+    .sort((a, b) => new Date(b.operation_date) - new Date(a.operation_date));
+  
+  return employeeOperations.length ? employeeOperations[0] : null;
+};
+
+const availableActionTypes = computed(() => {
+  if (!form.value.employee_id) return [];
+  
+  const lastOperation = getEmployeeLastOperation(form.value.employee_id);
+  const isCurrentlyEmployed = !lastOperation || lastOperation.action_type !== 'Увольнение';
+  
+  if (!lastOperation || !isCurrentlyEmployed) {
+    return ['Прием на работу'];
+  }
+  
+  return ['Увольнение', 'Изменение зарплаты', 'Изменение отдела'];
+});
 
 const actionTypesMap = {
   'Прием на работу': 'hire',
-  Увольнение: 'dismissal',
+  'Увольнение': 'dismissal',
   'Изменение зарплаты': 'salary_change',
-  'Изменение отдела': 'department_change',
+  'Изменение отдела': 'change_department',
 };
 
 const actionTypeOptions = computed(() => {
-  return actionTypes.map((type) => ({
+  return availableActionTypes.value.map((type) => ({
     id: type,
     name: type,
   }));
@@ -56,6 +81,10 @@ const defaultForm = () => ({
 });
 
 const form = ref(defaultForm());
+
+watch(() => form.value.employee_id, () => {
+  form.value.action_type = availableActionTypes.value.length > 0 ? availableActionTypes.value[0] : '';
+});
 
 const requiredFields = computed(() => {
   const fields = {
@@ -184,6 +213,11 @@ watch(
       </div>
 
       <div class="space-y-4">
+
+        <p class="text-sm text-gray-500 mb-2">
+          Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
+        </p>
+
         <UiSelect
           v-model="form.employee_id"
           label="Сотрудник *"
@@ -231,17 +265,6 @@ watch(
           :error="errors && errors.position_id"
         >
         </UiSelect>
-
-        <!-- <UiSelect
-          v-if="['Прием на работу'].includes(form.action_type)"
-          v-model="form.position_id"
-          label="Должность *"
-          :options="positions || []"
-          option-label="name"
-          option-value="id"
-          :error="errors && errors.position_id"
-        >
-        </UiSelect> -->
 
         <UiInput
           v-if="['Прием на работу', 'Изменение зарплаты'].includes(form.action_type)"

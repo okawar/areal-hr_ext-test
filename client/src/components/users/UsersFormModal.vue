@@ -119,10 +119,15 @@ const save = async () => {
       </div>
 
       <div class="space-y-4">
+
+      <p class="text-sm text-gray-500 mb-2">
+          Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
+      </p>
+
         <UiInput
           id="last_name"
           v-model="form.last_name"
-          label="Фамилия"
+          label="Фамилия *"
           placeholder="Введите фамилию"
           :error="errors.last_name"
         />
@@ -130,7 +135,7 @@ const save = async () => {
         <UiInput
           id="first_name"
           v-model="form.first_name"
-          label="Имя"
+          label="Имя *"
           placeholder="Введите имя"
           :error="errors.first_name"
         />
@@ -146,7 +151,7 @@ const save = async () => {
         <UiInput
           id="login"
           v-model="form.login"
-          label="Логин"
+          label="Логин *"
           placeholder="Введите логин"
           :error="errors.login"
         />
@@ -163,7 +168,7 @@ const save = async () => {
         <UiSelect
           id="role"
           v-model="form.role"
-          label="Роль пользователя"
+          label="Роль пользователя *"
           :options="roleOptions"
           placeholder="Выберите роль"
           :error="errors.role"

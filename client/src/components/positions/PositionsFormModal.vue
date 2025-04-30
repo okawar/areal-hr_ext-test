@@ -75,10 +75,15 @@ const save = async () => {
       </div>
 
       <div class="space-y-4">
+
+        <p class="text-sm text-gray-500 mb-2">
+          Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
+        </p>
+
         <UiInput
           id="name"
           v-model="form.name"
-          label="Название должности"
+          label="Название должности *"
           placeholder="Введите название"
           :error="errors.name"
         />

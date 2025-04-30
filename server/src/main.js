@@ -19,16 +19,16 @@ app.use(
 
 app.use(
   session({
-    secret: process.env.SECRET_KEY,
+    secret: 'секрет',
     resave: false,
     saveUninitialized: false,
     cookie: {
+      secure: false,      
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',    
     },
   })
 );
-
 app.use(passport.initialize());
 app.use(passport.session());
 

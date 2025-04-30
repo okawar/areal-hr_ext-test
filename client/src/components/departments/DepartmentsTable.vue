@@ -25,14 +25,12 @@ const getParentName = (id) => {
 };
 
 const handleDelete = async (id) => {
-  if (confirm('Удалить этот отдел?')) {
     try {
       await emit('delete', id);
       emit('refresh');
     } catch (e) {
       console.error('Ошибка при удалении:', e);
     }
-  }
 };
 </script>
 

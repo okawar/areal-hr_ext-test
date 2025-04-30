@@ -9,6 +9,7 @@ import organizationsApi from '../../api/organizations';
 const organizations = ref([]);
 const showModal = ref(false);
 const currentOrganization = ref(null);
+const search = ref('');
 const errors = ref({});
 
 const fetchOrganizations = async () => {
@@ -59,7 +60,7 @@ onMounted(fetchOrganizations);
     <h1 class="text-3xl font-bold mb-6 text-black">Управление организациями</h1>
 
     <div class="mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-      <UiInput v-model="search" class="w-full md:w-1/3" placeholder="Поиск отделов..." />
+      <UiInput v-model="search" class="w-full md:w-1/3" placeholder="Поиск организаций..." />
       <UiButton @click="openModal" class="w-full md:w-auto"> Добавить организацию </UiButton>
     </div>
 

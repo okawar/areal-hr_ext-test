@@ -2,7 +2,9 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { execSync } = require('child_process');
 
-const command = process.argv[2] || 'up';
+
+const args = process.argv.slice(2);
+const command = args.join(' ') || 'up'; 
 
 const requiredEnvVars = [
   'POSTGRES_USER',

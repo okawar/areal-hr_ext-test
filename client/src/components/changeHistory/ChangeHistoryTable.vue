@@ -4,6 +4,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  users: {
+    type: Array,
+    required: true,
+  },
 });
 
 const formatDate = (dateString) => {
@@ -12,29 +16,55 @@ const formatDate = (dateString) => {
   return date.toLocaleString('ru-RU');
 };
 
-const getChangedData = (changedFields) => {
-  if (!changedFields) return null;
+const getAction = (changedFields) => {
+  if (!changedFields || typeof changedFields !== 'object') return 'неизвестно';
 
-  const fields = { ...changedFields };
-
-  delete fields.action;
-
-  return fields;
+  const action = changedFields.action;
+  if (action === 'create') return 'создание';
+  if (action === 'update') return 'обновление';
+  if (action === 'delete') return 'удаление';
+  
+  return 'неизвестно';
 };
 
-const getAction = (changedFields) => {
-  if (!changedFields) return 'неизвестно';
+const getUserFullName = (userId) => {
+  const user = props.users.find((u) => u.id === userId);
+  if (!user) return 'Неизвестный пользователь';
 
-  if (changedFields.action === 'create') {
-    return 'создание';
-  } else if (changedFields.action === 'update') {
-    return 'обновление';
-  } else if (changedFields.action === 'delete') {
-    return 'удаление';
+  return `${user.last_name || ''} ${user.first_name || ''} ${user.middle_name || ''}`.trim();
+};
+
+const getFormattedChanges = (changedFields) => {
+  if (!changedFields || typeof changedFields !== 'object') return 'Нет изменений';
+
+  const action = changedFields.action;
+
+  if (action === 'create') {
+    return 'Объект успешно создан.';
+  }
+  if (action === 'delete') {
+    return 'Объект успешно удалён.';
   }
 
-  return changedFields.action || 'неизвестно';
+  // Системные поля, которые надо игнорировать
+  const ignoredFields = ['created_at', 'updated_at', 'action'];
+
+  // Оставляем только важные изменения
+  const meaningfulChanges = Object.entries(changedFields)
+    .filter(([key]) => !ignoredFields.includes(key));
+
+  if (meaningfulChanges.length === 0) {
+    return 'Обновление без изменений.';
+  }
+
+  const formatted = meaningfulChanges.map(([field, { old, new: newValue }]) => {
+    return `Поле "${field}" изменилось: "${old ?? '—'}" ➔ "${newValue ?? '—'}"`;
+  });
+
+  return formatted.join('\n');
 };
+
+
 </script>
 
 <template>
@@ -57,12 +87,10 @@ const getAction = (changedFields) => {
           <td class="px-6 py-4">{{ item.object_type }}</td>
           <td class="px-6 py-4">{{ item.object_id }}</td>
           <td class="px-6 py-4">{{ getAction(item.changed_fields) }}</td>
-          <td class="px-6 py-4">
-            <pre class="whitespace-pre-wrap text-sm">{{
-              JSON.stringify(getChangedData(item.changed_fields), null, 2) || '-'
-            }}</pre>
+          <td class="py-2 px-4 border-b whitespace-pre-line">
+            {{ getFormattedChanges(item.changed_fields) }}
           </td>
-          <td class="px-6 py-4">{{ item.change_by }}</td>
+          <td class="px-6 py-4">{{ getUserFullName(item.change_by) }}</td>
           <td class="px-6 py-4">{{ formatDate(item.change_time) }}</td>
         </tr>
       </tbody>

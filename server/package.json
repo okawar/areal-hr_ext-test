@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrate:create": "npx node-pg-migrate create",
     "migrate:up": "node pg-migrate-config.js up",
     "migrate:down": "node pg-migrate-config.js down",
     "migrate:reset": "node pg-migrate-config.js reset",
+    "migrate:admin": "node pg-migrate-config.js up --name 1744884472000_create_admin_user",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -38,6 +41,7 @@
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",
     "globals": "^16.0.0",
+    "nodemon": "^3.1.10",
     "prettier": "^3.5.3"
   }
 }
