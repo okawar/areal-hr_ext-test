@@ -76,16 +76,25 @@ const closeEmployeeModal = () => {
 
 const openFileModal = (file = null, employeeId = null) => {
   fileErrors.value = {};
-  currentFile.value = file;
 
-  if (employeeId && !file) {
+  if (file) {
+    currentFile.value = { ...file };
+  } else if (employeeId) {
     currentFile.value = {
+      id: null,
       employee_id: employeeId,
+      file_name: '',
+      file_path: '',
+      file: null,
+      comment: '',
     };
+  } else {
+    currentFile.value = null;
   }
 
   showFileModal.value = true;
 };
+
 
 const closeFileModal = () => {
   showFileModal.value = false;
@@ -196,12 +205,13 @@ onMounted(() => {
 
     <FilesFormModal
       v-if="showFileModal"
-      :file="currentFile"
+      v-model="currentFile"
       :employees="employees"
       :errors="fileErrors"
       @close="closeFileModal"
       @save="handleFileSave"
       @error="handleFileError"
     />
+
   </div>
 </template>

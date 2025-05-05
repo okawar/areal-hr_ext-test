@@ -17,8 +17,8 @@ router.use(ensureAuthenticated);
 
 router.get('/', getEmp);
 router.get('/:id', getEmpById);
-router.post('/', upload.single('file'), createEmp);
-router.put('/:id', upload.single('file'), updateEmp);
+router.post('/', createEmp);
+router.put('/:id', updateEmp);
 router.delete('/:id', deleteEmp);
 
 module.exports = router;

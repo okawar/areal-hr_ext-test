@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import UiButton from '../ui/UiButton.vue';
 import UiInput from '../ui/UiInput.vue';
 import OrganizationsTable from './OrganizationsTable.vue';
@@ -52,6 +52,12 @@ const handleError = (error) => {
   }
 };
 
+const filteredOrganizations = computed(() => {
+  return organizations.value.filter((org) =>
+    org.name.toLowerCase().includes(search.value.toLowerCase())
+  );
+});
+
 onMounted(fetchOrganizations);
 </script>
 
@@ -65,7 +71,7 @@ onMounted(fetchOrganizations);
     </div>
 
     <OrganizationsTable
-      :organizations="organizations"
+      :organizations="filteredOrganizations"
       @edit="openModal"
       @delete="organizationsApi.delete"
       @refresh="fetchOrganizations"

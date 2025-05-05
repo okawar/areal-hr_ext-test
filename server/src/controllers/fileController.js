@@ -46,41 +46,37 @@ const getFileById = async (req, res) => {
 };
 
 const createFile = async (req, res) => {
-  const { error, value } = fileSchema.validate(req.body);
-  if (error)
-    return res
-      .status(400)
-      .json({ error: 'Неверные данные файла', details: error.details[0].message });
-
-  const file = req.file;
-  if (!file) return res.status(400).json({ error: 'Файл не загружен' });
-
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-
-    const result = await client.query(
-      `
-      INSERT INTO files (employee_id, file_name, file_path, comment, created_at)
-      VALUES ($1, $2, $3, $4, NOW()) RETURNING *
-    `,
-      [value.employee_id, file.originalname, file.filename, value.comment]
-    );
-
-    await client.query('COMMIT');
-    res.json(result.rows[0]);
-  } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Error creating file:', err);
-
-    if (file) {
-      const filePath = path.resolve(__dirname, '../uploads', file.filename);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (!req.file) {
+      return res.status(400).json({ error: 'Файл обязателен для загрузки' });
     }
 
-    res.status(500).json({ error: 'Ошибка при создании файла', details: err.message });
-  } finally {
-    client.release();
+    const fileData = {
+      employee_id: req.body.employee_id ? Number(req.body.employee_id) : null,
+      file_name: req.file.originalname, // Всегда используем оригинальное имя
+      file_path: req.file.originalname, // Теперь сохраняем оригинальное имя
+      comment: req.body.comment || '',
+    };
+
+    const { error } = fileSchema.validate(fileData);
+    if (error) {
+      fs.unlinkSync(path.join(__dirname, '../uploads', req.file.originalname));
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO files (employee_id, file_name, file_path, comment) 
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [fileData.employee_id, fileData.file_name, fileData.file_path, fileData.comment]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error creating file:', err);
+    if (req.file) {
+      fs.unlinkSync(path.join(__dirname, '../uploads', req.file.originalname));
+    }
+    res.status(500).json({ error: 'Ошибка при создании файла' });
   }
 };
 
@@ -89,6 +85,12 @@ const updateFile = async (req, res) => {
   if (idError) return res.status(400).json({ error: idError.details[0].message });
 
   const { id, created_at, updated_at, deleted_at, ...data } = req.body;
+  console.log('Request body:', req.body); // Логируем тело запроса
+  console.log('Employee ID:', req.body.employee_id); // Логируем перед валидацией
+
+  if (data.employee_id) {
+    data.employee_id = Number(data.employee_id);
+  }
   const { error, value } = fileSchema.validate(data);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
@@ -145,9 +147,7 @@ const downloadFile = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query('SELECT * FROM files WHERE id = $1 AND deleted_at IS NULL', [
-      id,
-    ]);
+    const result = await pool.query('SELECT * FROM files WHERE id = $1 AND deleted_at IS NULL', [id]);
     if (!result.rowCount) return res.status(404).json({ error: 'Файл не найден' });
 
     const file = result.rows[0];
@@ -157,7 +157,19 @@ const downloadFile = async (req, res) => {
       return res.status(404).json({ error: 'Файл не найден на сервере' });
     }
 
-    res.download(filePath, file.file_name);
+    res.setHeader('Content-Disposition', `attachment; filename="${file.file_name}"`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+    
+    fileStream.on('error', (err) => {
+      console.error('File stream error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Ошибка при чтении файла' });
+      }
+    });
+
   } catch (err) {
     console.error('Error downloading file:', err);
     res.status(500).json({ error: 'Ошибка при скачивании файла', details: err.message });

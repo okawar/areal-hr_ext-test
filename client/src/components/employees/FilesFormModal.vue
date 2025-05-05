@@ -1,12 +1,12 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import filesApi from '../../api/files';
 import UiSelect from '../ui/UiSelect.vue';
 import UiTextarea from '../ui/UiTextarea.vue';
 import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
-  file: Object,
+  modelValue: Object,
   employees: {
     type: Array,
     required: true,
@@ -17,16 +17,46 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['close', 'save', 'error']);
+const emit = defineEmits(['update:modelValue', 'close', 'save', 'error']);
 
 const form = ref({
   id: null,
   employee_id: '',
   file_name: '',
-  file: null,
   file_path: '',
+  file: null,
   comment: '',
 });
+
+const validationErrors = ref({ employee_id: '' });
+const isSubmitting = ref(false);
+
+const updateFileForm = (file) => {
+  if (file) {
+    form.value = {
+      id: file.id,
+      employee_id: file.employee_id != null ? String(file.employee_id) : '',
+      file_name: file.file_name,
+      file_path: file.file_path,
+      comment: file.comment || '',
+      file: null,
+    };
+  } else {
+    form.value = {
+      id: null,
+      employee_id: '',
+      file_name: '',
+      file_path: '',
+      file: null,
+      comment: '',
+    };
+  }
+  validationErrors.value = { employee_id: '' };
+};
+
+watch(() => props.modelValue, (file) => {
+  updateFileForm(file);
+}, { immediate: true });
 
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
@@ -37,20 +67,41 @@ const handleFileUpload = (event) => {
   }
 };
 
-const isSubmitting = ref(false);
+const validateForm = () => {
+  let isValid = true;
+  validationErrors.value = { employee_id: '' };
+
+  if (!form.value.employee_id) {
+    validationErrors.value.employee_id = 'ID сотрудника обязателен для заполнения';
+    isValid = false;
+  }
+
+  return isValid;
+};
 
 const save = async () => {
   if (isSubmitting.value) return;
+  if (!validateForm()) return;
+
   isSubmitting.value = true;
 
   try {
+    if (!form.value.id && !form.value.file) {
+      throw new Error('Файл обязателен для загрузки');
+    }
+
+    const payload = {
+      employee_id: Number(form.value.employee_id),
+      comment: form.value.comment || '',
+      file: form.value.file,
+      file_name: form.value.file?.name || form.value.file_name || '',
+      // file_path больше не нужно передавать - сервер сам определит
+    };
+
     if (form.value.id) {
-      await filesApi.update(form.value.id, form.value);
+      await filesApi.update(form.value.id, payload);
     } else {
-      if (!form.value.file) {
-        throw new Error('Файл обязателен для загрузки');
-      }
-      await filesApi.create(form.value);
+      await filesApi.create(payload);
     }
 
     emit('save');
@@ -62,39 +113,11 @@ const save = async () => {
   }
 };
 
-watch(
-  () => props.file,
-  (file) => {
-    if (file) {
-      form.value = {
-        id: file.id,
-        employee_id: file.employee_id,
-        file_name: file.file_name,
-        file_path: file.file_path,
-        comment: file.comment || '',
-        file: null,
-      };
-    } else {
-      form.value = {
-        id: null,
-        employee_id: '',
-        file_name: '',
-        file_path: '',
-        file: null,
-        comment: '',
-      };
-    }
-  },
-  { immediate: true }
-);
 </script>
 
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div
-      class="fixed inset-0 bg-black-100 bg-opacity-40 backdrop-blur-sm transition-opacity"
-      @click="emit('close')"
-    />
+    <div class="fixed inset-0 bg-black-100 bg-opacity-40 backdrop-blur-sm transition-opacity" @click="emit('close')" />
     <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50">
       <h2 class="text-xl font-semibold text-black mb-4">
         {{ form.id ? 'Редактирование файла' : 'Добавление файла' }}
@@ -111,32 +134,18 @@ watch(
           label="Сотрудник"
           :options="employees"
           option-value="id"
-          :option-label="
-            (employee) => `${employee.last_name} ${employee.first_name} ${employee.middle_name}`
-          "
+          :option-label="e => `${e.last_name} ${e.first_name} ${e.middle_name}`"
+          :error="validationErrors.employee_id"
         />
+
         <div class="space-y-1">
           <label class="block text-sm font-medium text-gray-700">Файл</label>
           <div class="mt-1 flex items-center">
             <label class="cursor-pointer">
               <span
-                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                  />
-                </svg>
-                Выбрать файл
+                📎 Выбрать файл
               </span>
               <input type="file" class="sr-only" @change="handleFileUpload" />
             </label>
@@ -144,8 +153,6 @@ watch(
               {{ form.file_name || form.file?.name || 'Файл не выбран' }}
             </span>
           </div>
-          <p v-if="errors.file_name" class="mt-1 text-sm text-red-600">{{ errors.file_name }}</p>
-          <p v-if="errors.file_path" class="mt-1 text-sm text-red-600">{{ errors.file_path }}</p>
         </div>
 
         <UiTextarea

@@ -46,10 +46,8 @@ const getFormattedChanges = (changedFields) => {
     return 'Объект успешно удалён.';
   }
 
-  // Системные поля, которые надо игнорировать
   const ignoredFields = ['created_at', 'updated_at', 'action'];
 
-  // Оставляем только важные изменения
   const meaningfulChanges = Object.entries(changedFields)
     .filter(([key]) => !ignoredFields.includes(key));
 

@@ -19,7 +19,7 @@ router.get('/', getFile);
 router.get('/:id', getFileById);
 router.get('/:id/download', downloadFile);
 router.post('/', upload.single('file'), createFile);
-router.put('/:id', updateFile);
+router.put('/:id', upload.single('file'), updateFile);
 router.delete('/:id', deleteFile);
 
 module.exports = router;

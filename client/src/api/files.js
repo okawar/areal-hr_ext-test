@@ -1,26 +1,34 @@
 import apiClient from './index';
 
+function toFormData(data) {
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === null || value === undefined) return;
+
+    if (key === 'file' && value instanceof File) {
+      formData.append('file', value, value.name);
+      if (!data.file_name) {
+        formData.append('file_name', value.name);
+      }
+      if (!data.file_path) {
+        formData.append('file_path', value.name);
+      }
+    } else {
+      formData.append(key, value !== null ? String(value) : '');
+    }
+  });
+
+  return formData;
+}
+
 export default {
   fetchAll() {
     return apiClient.get('/api/file');
   },
 
   create(data) {
-    const formData = new FormData();
-
-    Object.keys(data).forEach((key) => {
-      const value = data[key];
-
-      if (value === null || value === undefined) return;
-
-      if (key === 'file' && value instanceof File) {
-        formData.append(key, value, value.name);
-      } else {
-        formData.append(key, String(value));
-      }
-    });
-
-    return apiClient.post('/api/file', formData, {
+    return apiClient.post('/api/file', toFormData(data), {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -28,21 +36,7 @@ export default {
   },
 
   update(id, data) {
-    const formData = new FormData();
-
-    Object.keys(data).forEach((key) => {
-      const value = data[key];
-
-      if (value === null || value === undefined) return;
-
-      if (key === 'file' && value instanceof File) {
-        formData.append(key, value, value.name);
-      } else {
-        formData.append(key, String(value));
-      }
-    });
-
-    return apiClient.put(`/api/file/${id}`, formData, {
+    return apiClient.put(`/api/file/${id}`, toFormData(data), {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

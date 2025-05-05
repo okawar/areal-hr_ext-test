@@ -55,7 +55,7 @@ const userSchema = Joi.object({
       'any.required': 'Пароль обязателен для заполнения',
     }),
   }),
-  role: Joi.string().valid('admin', 'user').required().messages({
+  role: Joi.string().valid('admin', 'hr_manager').required().messages({
     'string.base': 'Роль должна быть строкой',
     'string.empty': 'Роль не может быть пустой',
     'any.only': 'Роль может быть только admin или user',

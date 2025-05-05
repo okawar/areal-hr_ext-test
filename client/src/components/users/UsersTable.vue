@@ -82,8 +82,7 @@ const handleDelete = async (id) => {
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium"
                 :class="{
                   'bg-blue-100 text-blue-800': user.role === 'admin',
-                  'bg-green-100 text-green-800': user.role === 'manager',
-                  'bg-gray-100 text-gray-800': user.role === 'user',
+                  'bg-green-100 text-green-800': user.role === 'hr_manager',
                 }"
               >
                 {{ formatRole(user.role) }}

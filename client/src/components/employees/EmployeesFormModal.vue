@@ -113,7 +113,7 @@ const save = async () => {
 
   try {
     if (form.value.id) {
-      await employeesApi.update(payloadData);
+      await employeesApi.update(form.value.id, payloadData);
     } else {
       await employeesApi.create(payloadData);
     }
