@@ -3,6 +3,8 @@ import { ref, watch } from 'vue';
 import positionsApi from '../../api/positions';
 import UiInput from '../ui/UiInput.vue';
 import UiButton from '../ui/UiButton.vue';
+import { validateRequiredFields } from '../../utils/validateRequiredFields';
+
 
 const props = defineProps({
   position: Object,
@@ -35,10 +37,22 @@ const resetForm = () => {
   };
 };
 
+const requiredFields = ['name'];
+const requiredLabels = {
+  name: 'Название должности',
+};
+const errors = ref({});
+
 const isSubmitting = ref(false);
 
 const save = async () => {
   if (isSubmitting.value) return;
+
+  const validationErrors = validateRequiredFields(form.value, requiredFields, requiredLabels);
+  if (Object.keys(validationErrors).length > 0) {
+    errors.value = validationErrors;
+    return;
+  }
 
   isSubmitting.value = true;
   try {
@@ -86,6 +100,7 @@ const save = async () => {
           label="Название должности *"
           placeholder="Введите название"
           :error="errors.name"
+          required
         />
       </div>
 

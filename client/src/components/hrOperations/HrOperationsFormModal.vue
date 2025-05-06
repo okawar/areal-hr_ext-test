@@ -225,6 +225,7 @@ watch(
           option-label="last_name"
           option-value="id"
           :error="errors && errors.employee_id"
+          required
         >
           <template #option="{ option }">
             {{ employeeFullName(option) }}
@@ -232,6 +233,7 @@ watch(
           <template #selected-option="{ option }">
             {{ employeeFullName(option) }}
           </template>
+          
         </UiSelect>
 
         <UiSelect
@@ -241,6 +243,7 @@ watch(
           option-label="name"
           option-value="id"
           :error="errors && errors.action_type"
+          required
         >
         </UiSelect>
 

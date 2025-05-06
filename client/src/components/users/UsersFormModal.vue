@@ -124,12 +124,14 @@ const save = async () => {
           Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
       </p>
 
-        <UiInput
+
+      <UiInput
           id="last_name"
           v-model="form.last_name"
           label="Фамилия *"
           placeholder="Введите фамилию"
           :error="errors.last_name"
+          required
         />
 
         <UiInput
@@ -138,6 +140,7 @@ const save = async () => {
           label="Имя *"
           placeholder="Введите имя"
           :error="errors.first_name"
+          required
         />
 
         <UiInput
@@ -154,6 +157,7 @@ const save = async () => {
           label="Логин *"
           placeholder="Введите логин"
           :error="errors.login"
+          required
         />
 
         <UiInput
@@ -163,6 +167,7 @@ const save = async () => {
           type="password"
           :placeholder="form.id ? 'Оставьте пустым, чтобы не менять' : 'Введите пароль'"
           :error="errors.password"
+          :required="!form.id"
         />
 
         <UiSelect
@@ -174,6 +179,7 @@ const save = async () => {
           :error="errors.role"
           optionLabel="label"
           optionValue="value"
+          required
         />
       </div>
 

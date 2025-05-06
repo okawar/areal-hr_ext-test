@@ -4,6 +4,8 @@ import UiInput from '../ui/UiInput.vue';
 import UiTextarea from '../ui/UiTextarea.vue';
 import UiButton from '../ui/UiButton.vue';
 import organizationsApi from '../../api/organizations';
+import { validateRequiredFields } from '../../utils/validateRequiredFields';
+
 
 const props = defineProps({
   organization: {
@@ -24,10 +26,23 @@ const form = ref({
   comment: '',
 });
 
+const errors = ref({});
+const requiredFields = ['name'];
+const fieldLabels = {
+  name: 'Название организации',
+};
+
 const isSubmitting = ref(false);
 
 const save = async () => {
   if (isSubmitting.value) return;
+
+  const validationErrors = validateRequiredFields(form.value, requiredFields, fieldLabels);
+  if (Object.keys(validationErrors).length > 0) {
+    errors.value = validationErrors;
+    return;
+  }
+
 
   isSubmitting.value = true;
 

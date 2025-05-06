@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import employeesApi from '../../api/employees';
 import UiInput from '../ui/UiInput.vue';
 import UiButton from '../ui/UiButton.vue';
+import { validateRequiredFields } from '../../utils/validateRequiredFields';
 
 const props = defineProps({
   employee: {
@@ -88,8 +89,43 @@ const isSubmitting = ref(false);
 
 const errors = ref({});
 
+const requiredFields = [
+  'last_name',
+  'first_name',
+  'birth_date',
+  'passport_series',
+  'passport_number',
+  'passport_issue_date',
+  'passport_issued_by',
+  'region',
+  'locality',
+  'street',
+  'house',
+];
+
+const fieldLabels = {
+  last_name: 'Фамилия',
+  first_name: 'Имя',
+  middle_name: 'Отчество',
+  birth_date: 'Дата рождения',
+  passport_series: 'Серия паспорта',
+  passport_number: 'Номер паспорта',
+  passport_issue_date: 'Дата выдачи паспорта',
+  passport_issued_by: 'Кем выдан паспорт',
+  region: 'Регион',
+  locality: 'Город / населённый пункт',
+  street: 'Улица',
+  house: 'Дом',
+};
+
 const save = async () => {
   if (isSubmitting.value) return;
+
+  const validationErrors = validateRequiredFields(form.value, requiredFields, fieldLabels);
+  if (Object.keys(validationErrors).length > 0) {
+    errors.value = validationErrors;
+    return;
+  }
 
   isSubmitting.value = true;
   errors.value = {};
@@ -159,12 +195,14 @@ const save = async () => {
           label="Фамилия *"
           placeholder="Введите фамилию"
           :error="errors.last_name"
+          required
         />
         <UiInput
           v-model="form.first_name"
           label="Имя *"
           placeholder="Введите имя"
           :error="errors.first_name"
+          required
         />
         <UiInput
           v-model="form.middle_name"
@@ -177,6 +215,7 @@ const save = async () => {
           type="date"
           label="Дата рождения *"
           :error="errors.birth_date"
+          required
         />
 
         <div class="col-span-2 space-y-2">
@@ -186,23 +225,27 @@ const save = async () => {
               v-model="form.passport_series"
               placeholder="Серия *"
               :error="errors.passport_series"
+              required
             />
             <UiInput
               v-model="form.passport_number"
               placeholder="Номер *"
               :error="errors.passport_number"
+              required
             />
             <UiInput
               v-model="form.passport_issue_date"
               type="date"
               placeholder="Дата выдачи *"
               :error="errors.passport_issue_date"
+              required
             />
           </div>
           <UiInput
             v-model="form.passport_issued_by"
             placeholder="Кем выдан *"
             :error="errors.passport_issued_by"
+            required
           />
         </div>
 
@@ -210,14 +253,15 @@ const save = async () => {
         <div class="col-span-2 space-y-2">
           <label class="block text-sm font-medium text-gray-700">Адрес</label>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <UiInput v-model="form.region" placeholder="Регион *" :error="errors.region" />
+            <UiInput v-model="form.region" placeholder="Регион *" :error="errors.region" required />
             <UiInput
               v-model="form.locality"
               placeholder="Город / населённый пункт *"
               :error="errors.locality"
+              required
             />
-            <UiInput v-model="form.street" placeholder="Улица *" :error="errors.street" />
-            <UiInput v-model="form.house" placeholder="Дом *" :error="errors.house" />
+            <UiInput v-model="form.street" placeholder="Улица *" :error="errors.street" required />
+            <UiInput v-model="form.house" placeholder="Дом *" :error="errors.house" required />
             <UiInput v-model="form.building" placeholder="Корпус" :error="errors.building" />
             <UiInput v-model="form.apartment" placeholder="Квартира" :error="errors.apartment" />
           </div>

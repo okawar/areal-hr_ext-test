@@ -83,7 +83,7 @@ const isActive = (path) => route.path === path;
 </script>
 
 <template>
-  <div class="w-full p-4 min-h-screen bg-gray-50 relative">
+  <div v-if="authChecked" class="w-full p-4 min-h-screen bg-gray-50 relative">
     <div
       v-if="user"
       class="absolute top-4 right-4 bg-white border rounded-lg shadow-sm px-4 py-2 text-sm text-gray-700 flex items-center gap-2"

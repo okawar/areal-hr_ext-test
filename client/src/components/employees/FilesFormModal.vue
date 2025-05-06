@@ -4,6 +4,7 @@ import filesApi from '../../api/files';
 import UiSelect from '../ui/UiSelect.vue';
 import UiTextarea from '../ui/UiTextarea.vue';
 import UiButton from '../ui/UiButton.vue';
+import { validateRequiredFields } from '../../utils/validateRequiredFields';
 
 const props = defineProps({
   modelValue: Object,
@@ -67,22 +68,23 @@ const handleFileUpload = (event) => {
   }
 };
 
-const validateForm = () => {
-  let isValid = true;
-  validationErrors.value = { employee_id: '' };
-
-  if (!form.value.employee_id) {
-    validationErrors.value.employee_id = 'ID сотрудника обязателен для заполнения';
-    isValid = false;
-  }
-
-  return isValid;
+const requiredFields = ['employee_id'];
+const fieldLabels = {
+  employee_id: 'Сотрудник',
 };
+
+
 
 const save = async () => {
   if (isSubmitting.value) return;
-  if (!validateForm()) return;
 
+  const validationErrors = validateRequiredFields(form.value, requiredFields, fieldLabels);
+  if (Object.keys(validationErrors).length > 0) {
+    errors.value = validationErrors;
+    return;
+  }
+
+  
   isSubmitting.value = true;
 
   try {
@@ -95,7 +97,6 @@ const save = async () => {
       comment: form.value.comment || '',
       file: form.value.file,
       file_name: form.value.file?.name || form.value.file_name || '',
-      // file_path больше не нужно передавать - сервер сам определит
     };
 
     if (form.value.id) {
@@ -131,7 +132,7 @@ const save = async () => {
         <UiSelect
           id="employee"
           v-model="form.employee_id"
-          label="Сотрудник"
+          label="Сотрудник *"
           :options="employees"
           option-value="id"
           :option-label="e => `${e.last_name} ${e.first_name} ${e.middle_name}`"

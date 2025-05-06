@@ -9,8 +9,6 @@ import OpsView from '../components/hrOperations/HrOperationsView.vue';
 import HistoryView from '../components/changeHistory/ChangeHistoryView.vue';
 import UsersView from '../components/users/UsersView.vue';
 
-const user = JSON.parse(localStorage.getItem('user'));
-
 const routes = [
   { path: '/login', component: LoginView },
   {
@@ -24,27 +22,14 @@ const routes = [
       { path: 'employees', component: EmpView },
       { path: 'operations', component: OpsView },
       { path: 'history', component: HistoryView },
+      { path: 'users', component: UsersView },
     ],
   },
 ];
 
-if (user?.role === 'admin') {
-  routes[1].children.push({ path: 'users', component: UsersView });
-}
-
 const router = createRouter({
   history: createWebHistory(),
   routes,
-});
-
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('user');
-
-  if (!isAuthenticated && to.path !== '/login') {
-    next('/login');
-  } else {
-    next();
-  }
 });
 
 export default router;

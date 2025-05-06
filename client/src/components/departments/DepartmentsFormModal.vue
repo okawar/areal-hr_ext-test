@@ -5,6 +5,7 @@ import UiInput from '../ui/UiInput.vue';
 import UiSelect from '../ui/UiSelect.vue';
 import UiTextarea from '../ui/UiTextarea.vue';
 import UiButton from '../ui/UiButton.vue';
+import { validateRequiredFields } from '../../utils/validateRequiredFields';
 
 const props = defineProps({
   department: Object,
@@ -70,10 +71,22 @@ const resetForm = () => {
   };
 };
 
+const requiredFields = ['name', 'organization_id'];
+const fieldLabels = {
+  name: 'Название',
+  organization_id: 'Организация',
+};
+
 const isSubmitting = ref(false);
 
 const save = async () => {
   if (isSubmitting.value) return;
+
+  const validationErrors = validateRequiredFields(form.value, requiredFields, fieldLabels);
+  if (Object.keys(validationErrors).length > 0) {
+    errors.value = validationErrors;
+    return;
+  }
 
   isSubmitting.value = true;
   errors.value = {};
