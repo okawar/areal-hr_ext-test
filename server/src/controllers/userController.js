@@ -231,10 +231,29 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const getUsersForHistory = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, last_name, first_name, middle_name
+      FROM users
+      WHERE deleted_at IS NULL
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching users for history:', err);
+    res.status(500).json({
+      error: 'Ошибка при получении пользователей для истории',
+      details: err.message,
+    });
+  }
+};
+
+
 module.exports = {
   getUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
+  getUsersForHistory,
 };

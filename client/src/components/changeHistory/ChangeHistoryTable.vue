@@ -10,6 +10,8 @@ const props = defineProps({
   },
 });
 
+
+
 const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -61,7 +63,6 @@ const getFormattedChanges = (changedFields) => {
 
   return formatted.join('\n');
 };
-
 
 </script>
 

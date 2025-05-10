@@ -20,4 +20,8 @@ export default {
   delete(id) {
     return apiClient.delete(`api/users/${id}`);
   },
+
+  fetchForHistory() {
+    return apiClient.get('api/users/for-history');
+  },
 };

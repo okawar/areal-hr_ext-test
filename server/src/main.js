@@ -12,7 +12,7 @@ app.use(express.json());
 const cors = require('cors');
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: `${process.env.VITE_APP_URL}:${process.env.VITE_APP_PORT}`, 
     credentials: true,
   })
 );
@@ -51,9 +51,11 @@ app.use('/api/file', fileRoutes);
 app.use('/api/changeHistory', changeHistoryRoutes);
 app.use('/api/auth', authRoutes);
 
+app.use('/api/users/for-history', userRoutes);
+
 app.use('/api/users', requireRole('admin'), userRoutes);
 
-const PORT = process.env.APP_PORT || 3000;
+const PORT = process.env.VITE_APP_PORT_SERVER || 3000;
 const HOST = process.env.APP_URL;
 
 const startServer = async () => {

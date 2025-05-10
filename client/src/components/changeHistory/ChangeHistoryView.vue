@@ -18,13 +18,13 @@ const fetchHistory = async () => {
 
 const fetchUsers = async () => {
   try {
-    const res = await usersApi.fetchAll();
-    users.value = Array.isArray(res.data) ? res.data.sort((a, b) => a.id - b.id) : [];
-  } catch (e) {
-    console.error('Ошибка при загрузке пользователей:', e);
-    users.value = [];
+    const response = await usersApi.fetchForHistory();
+    users.value = Array.isArray(response.data) ? response.data.sort((a, b) => a.id - b.id) : [];
+  } catch (err) {
+    console.error('Ошибка при загрузке пользователей:', err);
   }
 };
+
 
 onMounted(() => {
   fetchHistory();
