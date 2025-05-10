@@ -10,12 +10,10 @@ initializePassport(passport);
 const app = express();
 app.use(express.json());
 const cors = require('cors');
-app.use(
-  cors({
-    origin: `${process.env.VITE_APP_URL}:${process.env.VITE_APP_PORT}`, 
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
 
 app.use(
   session({
