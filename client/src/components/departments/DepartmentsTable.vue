@@ -64,6 +64,12 @@ const handleDelete = async (id) => {
             >
               Родительский отдел
             </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Комментарий
+            </th>
 
             <th
               scope="col"
@@ -93,6 +99,11 @@ const handleDelete = async (id) => {
             <td class="px-6 py-4 whitespace-nowrap text-sm">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium">
                 {{ getParentName(department.parent_id) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium">
+                {{ department.comment }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

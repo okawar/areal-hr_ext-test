@@ -12,7 +12,6 @@ const getEmp = async (req, res) => {
       FROM employees e
       LEFT JOIN departments d ON e.department_id = d.id
       LEFT JOIN positions p ON e.position_id = p.id
-      WHERE e.deleted_at IS NULL
     `);
     res.json(result.rows);
   } catch (err) {
@@ -42,7 +41,7 @@ const getEmpById = async (req, res) => {
       FROM employees e
       LEFT JOIN departments d ON e.department_id = d.id
       LEFT JOIN positions p ON e.position_id = p.id
-      WHERE e.id = $1 AND e.deleted_at IS NULL
+      WHERE e.id = $1
       `,
       [req.params.id]
     );
@@ -78,12 +77,12 @@ const createEmp = async (req, res) => {
          passport_series, passport_number, passport_issue_date, passport_issued_by,
          region, locality, street, house, building, apartment, 
          department_id, position_id,
-         created_at, updated_at) 
+         created_at) 
        VALUES ($1, $2, $3, $4, 
                $5, $6, $7, $8, 
                $9, $10, $11, $12, $13, $14,
                $15, $16,
-               NOW(), NOW()) 
+               NOW()) 
        RETURNING *`,
       [
         value.first_name,

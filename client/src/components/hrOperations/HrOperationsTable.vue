@@ -1,4 +1,5 @@
 <script setup>
+import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
   operations: {
@@ -23,18 +24,18 @@ const emit = defineEmits(['edit', 'delete', 'refresh']);
 
 const getEmployeeName = (id) => {
   const employee = props.employees.find((e) => e.id === id);
-  return employee ? `${employee.last_name} ${employee.first_name}` : 'Не указан';
+  return employee ? `${employee.last_name} ${employee.first_name}${employee.middle_name ? ' ' + employee.middle_name : ''}` : 'Не указан';
 };
 
-// const getDepartmentName = (id) => {
-//   const department = props.departments.find((d) => d.id === id);
-//   return department ? department.name : '—';
-// };
+const getDepartmentName = (id) => {
+  const department = props.departments.find((d) => d.id === id);
+  return department ? department.name : '—';
+};
 
-// const getPositionName = (id) => {
-//   const position = props.positions.find((p) => p.id === id);
-//   return position ? position.name : '—';
-// };
+const getPositionName = (id) => {
+  const position = props.positions.find((p) => p.id === id);
+  return position ? position.name : '—';
+};
 
 const formatDate = (dateString) => {
   if (!dateString) return '—';
@@ -42,9 +43,19 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('ru-RU');
 };
 
-// const formatSalary = (salary) => {
-//   return salary ? salary.toLocaleString('ru-RU') : '—';
-// };
+const formatSalary = (salary) => {
+  return salary ? salary.toLocaleString('ru-RU') : '—';
+};
+
+const getActionTypeDisplay = (actionType) => {
+  const actionTypesMap = {
+    hire: 'Прием на работу',
+    dismissal: 'Увольнение',
+    salary_change: 'Изменение зарплаты',
+    department_change: 'Изменение отдела',
+  };
+  return actionTypesMap[actionType] || actionType;
+};
 
 // const handleDelete = async (id) => {
 //   if (confirm('Удалить эту операцию?')) {
@@ -86,6 +97,24 @@ const formatDate = (dateString) => {
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
+              Отдел
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Должность
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Зарплата
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Дата
             </th>
             <!-- <th
@@ -105,7 +134,16 @@ const formatDate = (dateString) => {
               {{ getEmployeeName(op.employee_id) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
-              {{ op.action_type }}
+              {{ getActionTypeDisplay(op.action_type) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              {{ getDepartmentName(op.department_id) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              {{ getPositionName(op.position_id) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              {{ formatSalary(op.salary) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
               {{ formatDate(op.operation_date) }}

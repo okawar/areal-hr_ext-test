@@ -12,8 +12,8 @@ import UiButton from '../../components/ui/UiButton.vue';
 const actionTypeDisplayMap = {
   hire: 'Прием на работу',
   dismissal: 'Увольнение',
-  change_salary: 'Изменение зарплаты',
-  change_department: 'Изменение отдела',
+  salary_change: 'Изменение зарплаты',
+  department_change: 'Изменение отдела',
 };
 
 const operations = ref([]);

@@ -29,22 +29,59 @@ const getEmployeeFiles = (employeeId) => {
   return props.files.filter((file) => file.employee_id === employeeId);
 };
 
+const formatDate = (date) => {
+  return date ? new Date(date).toLocaleDateString('ru-RU') : '—';
+};
+
+const getAddress = (emp) => {
+  const parts = [
+    emp.region,
+    emp.locality,
+    emp.street,
+    emp.house,
+    emp.building ? `корп. ${emp.building}` : '',
+    emp.apartment ? `кв. ${emp.apartment}` : '',
+  ].filter(Boolean);
+  return parts.length ? parts.join(', ') : '—';
+};
+
+const getPassportData = (emp) => {
+  const parts = [
+    `${emp.passport_series} ${emp.passport_number}`,
+    formatDate(emp.passport_issue_date),
+    emp.passport_issued_by,
+  ].filter(Boolean);
+  return parts.length ? parts.join(', ') : '—';
+};
+
 const handleDownloadFile = async (file) => {
   try {
     if (file.isDownloading) return;
     file.isDownloading = true;
 
     const response = await filesApi.download(file.id);
-    
-    const url = window.URL.createObjectURL(response.data);
+
+    const blob = new Blob([response.data], { type: response.headers['content-type'] || 'application/octet-stream' });
+    const url = window.URL.createObjectURL(blob);
+
+    let fileName = file.file_name || 'file';
+    const contentDisposition = response.headers['content-disposition'];
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename\*=UTF-8''(.+)|filename="(.+)"/);
+      if (match && match[1]) {
+        fileName = decodeURIComponent(match[1]);
+      } else if (match && match[2]) {
+        fileName = match[2];
+      }
+    }
 
     const link = document.createElement('a');
     link.href = url;
-    link.download = file.file_name || 'file'; 
-    
+    link.download = fileName;
+
     document.body.appendChild(link);
     link.click();
-    
+
     setTimeout(() => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
@@ -56,6 +93,9 @@ const handleDownloadFile = async (file) => {
     file.isDownloading = false;
   }
 };
+
+const isDeleted = (emp) => !!emp.deleted_at;
+const isNotHired = (emp) => (emp.salary === null && emp.department_id === null && emp.position_id === null);
 </script>
 
 <template>
@@ -66,22 +106,30 @@ const handleDownloadFile = async (file) => {
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ФИО</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата рождения</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Паспортные данные</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Адрес</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Отдел</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Должность</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Паспорт</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Зарплата</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <template v-for="emp in employees" :key="emp.id">
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ emp.id }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ getFullName(emp) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ emp.department_name || '—' }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ emp.position_name || '—' }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ emp.passport_series }} {{ emp.passport_number }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ emp.salary || '—' }}</td>
+            <tr :class="{ 'bg-red-50 text-red-600': isDeleted(emp), 'hover:bg-gray-50': !isDeleted(emp) }" class="transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ emp.id }}</td>
+              <td class="px-6 py-4 text-sm">
+                {{ getFullName(emp) }}
+                <span v-if="isDeleted(emp)" class="ml-2 text-xs font-medium text-red-600">(Уволен)</span>
+                <span v-if="isNotHired(emp)" class="ml-2 text-xs font-medium text-red-600">(Не нанят)</span>
+              </td>
+              <td class="px-6 py-4 text-sm">{{ formatDate(emp.birth_date) }}</td>
+              <td class="px-6 py-4 text-sm">{{ getPassportData(emp) }}</td>
+              <td class="px-6 py-4 text-sm">{{ getAddress(emp) }}</td>
+              <td class="px-6 py-4 text-sm">{{ emp.department_name || '—' }}</td>
+              <td class="px-6 py-4 text-sm">{{ emp.position_name || '—' }}</td>
+              <td class="px-6 py-4 text-sm">{{ emp.salary || '—' }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex justify-end space-x-2">
                   <UiButton
@@ -112,7 +160,7 @@ const handleDownloadFile = async (file) => {
               class="bg-gray-50"
             >
               <td class="px-6 py-2 text-sm text-gray-500"></td>
-              <td colspan="4" class="px-6 py-2 text-sm flex items-center">
+              <td colspan="7" class="px-6 py-2 text-sm flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-4 w-4 mr-2 text-gray-400"

@@ -1,9 +1,12 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { VueMaskDirective } from 'v-mask';
 import employeesApi from '../../api/employees';
 import UiInput from '../ui/UiInput.vue';
 import UiButton from '../ui/UiButton.vue';
 import { validateRequiredFields } from '../../utils/validateRequiredFields';
+
+const vMask = VueMaskDirective;
 
 const props = defineProps({
   employee: {
@@ -86,7 +89,6 @@ const resetForm = () => {
 };
 
 const isSubmitting = ref(false);
-
 const errors = ref({});
 
 const requiredFields = [
@@ -116,6 +118,8 @@ const fieldLabels = {
   locality: 'Город / населённый пункт',
   street: 'Улица',
   house: 'Дом',
+  building: 'Корпус',
+  apartment: 'Квартира',
 };
 
 const save = async () => {
@@ -124,6 +128,16 @@ const save = async () => {
   const validationErrors = validateRequiredFields(form.value, requiredFields, fieldLabels);
   if (Object.keys(validationErrors).length > 0) {
     errors.value = validationErrors;
+    return;
+  }
+
+  if (form.value.passport_series.length !== 4 || !/^\d{4}$/.test(form.value.passport_series)) {
+    errors.value.passport_series = 'Серия паспорта должна содержать ровно 4 цифры';
+    return;
+  }
+
+  if (form.value.passport_number.length !== 6 || !/^\d{6}$/.test(form.value.passport_number)) {
+    errors.value.passport_number = 'Номер паспорта должен содержать ровно 6 цифры';
     return;
   }
 
@@ -186,7 +200,7 @@ const save = async () => {
       </div>
 
       <p class="text-sm text-gray-500 mb-2">
-          Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
+        Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
       </p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -223,13 +237,15 @@ const save = async () => {
           <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
             <UiInput
               v-model="form.passport_series"
-              placeholder="Серия *"
+              v-mask="'####'"
+              placeholder="Серия (4 цифры) *"
               :error="errors.passport_series"
               required
             />
             <UiInput
               v-model="form.passport_number"
-              placeholder="Номер *"
+              v-mask="'######'"
+              placeholder="Номер (6 цифр) *"
               :error="errors.passport_number"
               required
             />
@@ -249,7 +265,6 @@ const save = async () => {
           />
         </div>
 
-
         <div class="col-span-2 space-y-2">
           <label class="block text-sm font-medium text-gray-700">Адрес</label>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -266,12 +281,11 @@ const save = async () => {
             <UiInput v-model="form.apartment" placeholder="Квартира" :error="errors.apartment" />
           </div>
         </div>
-
       </div>
 
       <div class="mt-6 flex justify-end space-x-3">
         <UiButton variant="secondary" @click="emit('close')">Отмена</UiButton>
-        <UiButton @click="save">Сохранить</UiButton>
+        <UiButton @click="save" :disabled="isSubmitting">Сохранить</UiButton>
       </div>
     </div>
   </div>

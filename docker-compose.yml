@@ -41,6 +41,7 @@ services:
     volumes:
       - ./server:/app
       - /app/node_modules
+      - ./server/src/uploads:/app/src/uploads 
     restart: unless-stopped
     networks:
       - areal-network
@@ -84,6 +85,8 @@ services:
     build:
       context: .
       dockerfile: containers/client/Dockerfile
+    volumes:
+      - ./server/src/uploads:/usr/share/nginx/html/uploads
     ports:
       - "5000:80"
     depends_on:

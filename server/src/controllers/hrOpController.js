@@ -79,9 +79,8 @@ const createOperation = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // Получаем текущие данные сотрудника
     const employeeResult = await client.query(
-      'SELECT id, department_id, position_id, salary FROM employees WHERE id = $1 AND deleted_at IS NULL',
+      'SELECT id, department_id, position_id, salary FROM employees WHERE id = $1',
       [value.employee_id]
     );
 
@@ -140,7 +139,6 @@ const createOperation = async (req, res) => {
 
     const createdOperation = result.rows[0];
 
-    // Обновляем только переданные поля, сохраняя существующие значения если поле не передано
     await client.query(
       `
       UPDATE employees SET 
@@ -163,6 +161,16 @@ const createOperation = async (req, res) => {
         `
         UPDATE employees SET 
           deleted_at = NOW()
+        WHERE id = $1
+      `,
+        [value.employee_id]
+      );
+    }
+    if (value.action_type.toLowerCase() === 'hire') {
+      await client.query(
+        `
+        UPDATE employees SET 
+          deleted_at = NULL
         WHERE id = $1
       `,
         [value.employee_id]

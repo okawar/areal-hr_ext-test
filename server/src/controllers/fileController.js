@@ -53,8 +53,8 @@ const createFile = async (req, res) => {
 
     const fileData = {
       employee_id: req.body.employee_id ? Number(req.body.employee_id) : null,
-      file_name: req.file.originalname, // Всегда используем оригинальное имя
-      file_path: req.file.originalname, // Теперь сохраняем оригинальное имя
+      file_name: req.file.originalname, 
+      file_path: req.file.originalname, 
       comment: req.body.comment || '',
     };
 
@@ -85,8 +85,8 @@ const updateFile = async (req, res) => {
   if (idError) return res.status(400).json({ error: idError.details[0].message });
 
   const { id, created_at, updated_at, deleted_at, ...data } = req.body;
-  console.log('Request body:', req.body); // Логируем тело запроса
-  console.log('Employee ID:', req.body.employee_id); // Логируем перед валидацией
+  console.log('Request body:', req.body); 
+  console.log('Employee ID:', req.body.employee_id); 
 
   if (data.employee_id) {
     data.employee_id = Number(data.employee_id);
@@ -121,24 +121,60 @@ const updateFile = async (req, res) => {
 
 const deleteFile = async (req, res) => {
   const { error } = idSchema.validate(req.params);
-  if (error)
+  if (error) {
     return res.status(400).json({ error: 'Неверный ID файла', details: error.details[0].message });
+  }
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    await client.query('UPDATE files SET deleted_at = NOW() WHERE id = $1 RETURNING *', [
+    const fileResult = await client.query('SELECT file_path FROM files WHERE id = $1 AND deleted_at IS NULL', [
       req.params.id,
     ]);
 
-    await client.query('COMMIT');
-    res.json({ message: 'Файл удален' });
+    if (fileResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Файл не найден или уже удалён' });
+    }
+
+    const filePath = fileResult.rows[0].file_path;
+    const fullPath = path.join(__dirname, '../uploads', filePath);
+
+    fs.unlink(fullPath, (err) => {
+      if (err && err.code !== 'ENOENT') {
+        client.query('ROLLBACK').then(() => {
+          console.error('Ошибка при удалении файла с диска:', err);
+          res.status(500).json({ error: 'Ошибка при удалении файла с диска', details: err.message });
+          client.release();
+        });
+        return;
+      }
+      if (err && err.code === 'ENOENT') {
+        console.warn(`Файл не найден на диске: ${fullPath}`);
+      } else {
+        console.log(`Файл удалён с диска: ${fullPath}`);
+      }
+
+      client.query('UPDATE files SET deleted_at = NOW() WHERE id = $1 RETURNING *', [req.params.id])
+        .then(() => {
+          client.query('COMMIT').then(() => {
+            res.json({ message: 'Файл успешно помечен как удалённый и удалён с диска' });
+            client.release();
+          });
+        })
+        .catch((dbErr) => {
+          client.query('ROLLBACK').then(() => {
+            console.error('Ошибка при мягком удалении файла:', dbErr);
+            res.status(500).json({ error: 'Ошибка при мягком удалении файла', details: dbErr.message });
+            client.release();
+          });
+        });
+    });
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('Error deleting file:', err);
+    console.error('Ошибка при удалении файла:', err);
     res.status(500).json({ error: 'Ошибка при удалении файла', details: err.message });
-  } finally {
     client.release();
   }
 };

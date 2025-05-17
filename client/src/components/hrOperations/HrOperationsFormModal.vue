@@ -19,27 +19,14 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save', 'error']);
 
-const getEmployeeLastOperation = (employeeId) => {
-  if (!employeeId || !props.operations || !props.operations.length) return null;
-  
-  const employeeOperations = props.operations
-    .filter(op => op.employee_id === Number(employeeId))
-    .sort((a, b) => new Date(b.operation_date) - new Date(a.operation_date));
-  
-  return employeeOperations.length ? employeeOperations[0] : null;
-};
-
 const availableActionTypes = computed(() => {
   if (!form.value.employee_id) return [];
+  console.log('employees', props.employees);
+  const employee = props.employees.find(e => e.id === Number(form.value.employee_id));
+  console.log('employee', employee);
+  const isCurrentlyEmployed = (employee?.position_id || employee?.department_id || employee?.salary) && employee.deleted_at === null;
   
-  const lastOperation = getEmployeeLastOperation(form.value.employee_id);
-  const isCurrentlyEmployed = !lastOperation || lastOperation.action_type !== 'Увольнение';
-  
-  if (!lastOperation || !isCurrentlyEmployed) {
-    return ['Прием на работу'];
-  }
-  
-  return ['Увольнение', 'Изменение зарплаты', 'Изменение отдела'];
+  return isCurrentlyEmployed ? ['Увольнение', 'Изменение зарплаты', 'Изменение отдела'] : ['Прием на работу'];
 });
 
 const actionTypesMap = {

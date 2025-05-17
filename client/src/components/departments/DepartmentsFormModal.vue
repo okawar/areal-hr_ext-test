@@ -75,6 +75,8 @@ const requiredFields = ['name', 'organization_id'];
 const fieldLabels = {
   name: 'Название',
   organization_id: 'Организация',
+  parent_id: 'Родительский отдел',
+  comment: 'Комментарий',
 };
 
 const isSubmitting = ref(false);
@@ -83,6 +85,9 @@ const save = async () => {
   if (isSubmitting.value) return;
 
   const validationErrors = validateRequiredFields(form.value, requiredFields, fieldLabels);
+  if (!form.value.organization_id) {
+    validationErrors.organization_id = 'Организация обязательна для выбора';
+  }
   if (Object.keys(validationErrors).length > 0) {
     errors.value = validationErrors;
     return;
@@ -93,7 +98,7 @@ const save = async () => {
 
   const payloadData = {
     name: form.value.name,
-    organization_id: form.value.organization_id ? Number(form.value.organization_id) : null,
+    organization_id: Number(form.value.organization_id),
     parent_id: form.value.parent_id ? Number(form.value.parent_id) : null,
     comment: form.value.comment || '',
   };
@@ -125,7 +130,9 @@ const save = async () => {
       class="fixed inset-0 bg-black-100 bg-opacity-40 backdrop-blur-sm transition-opacity"
       @click="emit('close')"
     />
-    <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50">
+    <div
+      class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-50 overflow-y-auto max-h-[90vh]"
+    >
       <h2 class="text-xl font-semibold text-black mb-4">
         {{ form.id ? 'Редактирование отдела' : 'Добавление отдела' }}
       </h2>
@@ -134,18 +141,19 @@ const save = async () => {
         {{ errors.general }}
       </div>
 
+
+      <p class="text-sm text-gray-500 mb-2">
+        Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
+      </p>
+
       <div class="space-y-4">
-
-        <p class="text-sm text-gray-500 mb-2">
-          Поля, отмеченные <span class="text-red-500">*</span>, обязательны для заполнения.
-        </p>
-
         <UiInput
           id="name"
           v-model="form.name"
           label="Название отдела *"
           placeholder="Введите название"
           :error="errors.name"
+          required
         />
 
         <UiSelect
@@ -157,8 +165,8 @@ const save = async () => {
           :error="errors.organization_id"
           optionLabel="label"
           optionValue="value"
+          required
         />
-
 
         <UiSelect
           id="parent"
@@ -182,7 +190,7 @@ const save = async () => {
 
       <div class="mt-6 flex justify-end space-x-3">
         <UiButton variant="secondary" @click="emit('close')">Отмена</UiButton>
-        <UiButton @click="save">Сохранить</UiButton>
+        <UiButton @click="save" :disabled="isSubmitting">Сохранить</UiButton>
       </div>
     </div>
   </div>
