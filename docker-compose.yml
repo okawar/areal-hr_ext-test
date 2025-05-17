@@ -81,18 +81,32 @@ services:
     networks:
       - areal-network
 
+  vitepress:
+    build:
+      context: .
+      dockerfile: containers/docs/Dockerfile
+    container_name: areal-hr-vitepress
+    volumes:
+      - vitepress_dist:/app/vitepressDocs/.vitepress/dist
+    networks:
+      - areal-network
+
   nginx:
     build:
       context: .
       dockerfile: containers/client/Dockerfile
+    container_name: areal-hr-nginx
     volumes:
       - ./server/src/uploads:/usr/share/nginx/html/uploads
+      - vitepress_dist:/usr/share/nginx/html/docs
     ports:
       - "5000:80"
     depends_on:
       - server
+      - vitepress
     networks:
       - areal-network
+
 
 networks:
   areal-network:
@@ -100,7 +114,4 @@ networks:
 
 volumes:
   postgres_data:
-
-
-  
-
+  vitepress_dist:
